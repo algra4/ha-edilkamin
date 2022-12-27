@@ -27,7 +27,6 @@ _Pay attention_ : If the API changes, I cannot guarantee that the integration wi
 
 - [x] validate mac address provided 
 - [ ] create test
-- [ ] 
 
 ## Installation
 
