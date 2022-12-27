@@ -23,11 +23,6 @@ This little integration provides :
 
 _Pay attention_ : If the API changes, I cannot guarantee that the integration will continue to work.
 
-## Todo:
-
-- [x] validate mac address provided 
-- [ ] create test
-
 ## Installation
 
 ### Manual Installation
@@ -72,5 +67,9 @@ On the proxy application we will see all requests.
   - motherboard : `1.58.201215a` - `1.0.200824a`
   - wifi_ble_module : `1.0_20` - `1.0.200824a`
 
+## Todo:
+
+- [x] validate mac address provided 
+- [ ] create test
 
 
