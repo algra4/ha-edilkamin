@@ -1,0 +1,22 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Appareil déjà configuré"
+    },
+    "error": {
+      "cannot_connect": "Impossible de se connecter. L'addresse mac (pas de :) est soit invalide ou bien l'appareil n'est pas accessible",
+      "invalid_auth": "Invalide authentification",
+      "mac_address": "Mac addresse invalide",
+      "unknown": "Erreur inconnue"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "mac_address": "Mac address",
+          "refresh_token": "Refresh token",
+          "client_id": "Client id"
+        }
+      }
+    }
+  }
+}

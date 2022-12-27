@@ -1,0 +1,17 @@
+{
+  "domain": "edilkamin",
+  "name": "Edilkamin",
+  "config_flow": true,
+  "integration_type": "hub",
+  "documentation": "https://github.com/algra4/edilkamin",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": [
+    "@algra4"
+  ],
+  "iot_class": "cloud_polling",
+  "version": "1.0.0"
+}
