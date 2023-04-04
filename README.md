@@ -36,7 +36,7 @@ _Pay attention_ : If the API changes, I cannot guarantee that the integration wi
 
 ### Installation via Home Assistant Community Store (HACS)
 1. Ensure HACS is installed.
-1. Add the repo(https://github.com/algra4/edilkamin) has custom repo ([HACS how-to](https://hacs.xyz/docs/faq/custom_repositories))
+1. Add the repo(https://github.com/algra4/ha-edilkamin) has custom repo ([HACS how-to](https://hacs.xyz/docs/faq/custom_repositories))
 1. Search for and install the "Edilkamin" integration
 2. Restart Home Assistant
 3. In the home assistant configuration screen click on Integrations.
