@@ -1,6 +1,6 @@
 # Edilkamin for Home Assistant
 
-![example_integration](edilkamin.png)
+![example_integration](doc/edilkamin.png)
 
 This little integration provides :
 
@@ -17,6 +17,7 @@ This little integration provides :
   - turn on/off the airkare function
   - turn on/off the relax function
   - turn on/off the chrono mode
+  - turn on/off the schedule
 - fan :
   - modify the fan 1 speed  
 - climate
@@ -36,7 +37,7 @@ _Pay attention_ : If the API changes, I cannot guarantee that the integration wi
 
 ### Installation via Home Assistant Community Store (HACS)
 1. Ensure HACS is installed.
-1. Add the repo(https://github.com/algra4/ha-edilkamin) has custom repo ([HACS how-to](https://hacs.xyz/docs/faq/custom_repositories))
+1. Add this repo (https://github.com/algra4/ha-edilkamin) has custom repo ([HACS how-to](https://hacs.xyz/docs/faq/custom_repositories))
 1. Search for and install the "Edilkamin" integration
 2. Restart Home Assistant
 3. In the home assistant configuration screen click on Integrations.
@@ -47,19 +48,25 @@ _Pay attention_ : If the API changes, I cannot guarantee that the integration wi
 ## How to get the information for the integration.
 
 In my case, I used a proxy application (Proxyman on IOS).
-Start the vpn and use the `Mind` application. 
-On the proxy application we will see all requests. 
+* Start the vpn
+* Use `The Mind` application.
+  * Make a logout-login 
+* On the proxy application many requests. 
+  * Find the request with the url -> `https://cognito-idp.eu-central-1.amazonaws.com/` 
+    <details>
+    <summary>Get the <b>clientId</b></summary>
+  
+      1. Open the request and show the body: ![request_show_body.jpg](doc/request_show_body.jpg)
+      2. Get the content of `ClientId`: ![request_body.jpg](doc/request_body.jpg)
+    </details>
+    <details>
+    <summary>Get the <b>refresh token</b></summary>
+  
+      1. Open the response and show the body: ![response_show_body.jpg](doc%2Fresponse_show_body.jpg)
+      2. Get the content of `ClientId`: ![request_body.jpg](doc/response_body.jpg)
+    </details>
 
-### mac address:
-
-- Select one request with this url `https://fxtj7xkgc6.execute-api.eu-central-1.amazonaws.com` and in the body we have the value for the mac address
-
-### client id and refresh token 
-
-- Find the request with :
-  - url -> `https://cognito-idp.eu-central-1.amazonaws.com/` 
-  - In the body the value of the attribute `AuthFlow` must be `REFRESH_TOKEN_AUTH`
-  - In the same body with have the `REFRESH_TOKEN` and `ClientId`
+  *  Get the **mac address**: Select one request with this url `https://fxtj7xkgc6.execute-api.eu-central-1.amazonaws.com` and in the body we have the value for the mac address
 
 ## Tested device :
 
