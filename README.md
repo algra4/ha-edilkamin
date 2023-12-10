@@ -2,7 +2,7 @@
 
 ![example_integration](doc/edilkamin.png)
 
-This little integration provides :
+This integration provides :
 
 - binary sensor :
   - thank pellet
@@ -22,7 +22,7 @@ This little integration provides :
   - modify the fan 1 speed  
 - climate
 
-_Pay attention_ : If the API changes, I cannot guarantee that the integration will continue to work.
+_Pay attention_ : If the API changes, I can't guarantee that the integration will continue to work.
 
 ## Installation
 
@@ -43,30 +43,7 @@ _Pay attention_ : If the API changes, I cannot guarantee that the integration wi
 3. In the home assistant configuration screen click on Integrations.
 4. Click on the + icon to add a new integration.
 5. Search for `Edilakmin` and select it.
-6. Enter the mac address, client id and the refresh token.
-
-## How to get the information for the integration.
-
-In my case, I used a proxy application (Proxyman on IOS).
-* Start the vpn
-* Use `The Mind` application.
-  * Make a logout-login 
-* On the proxy application many requests. 
-  * Find the request with the url -> `https://cognito-idp.eu-central-1.amazonaws.com/` 
-    <details>
-    <summary>Get the <b>clientId</b></summary>
-  
-      1. Open the request and show the body: ![request_show_body.jpg](doc/request_show_body.jpg)
-      2. Get the content of `ClientId`: ![request_body.jpg](doc/request_body.jpg)
-    </details>
-    <details>
-    <summary>Get the <b>refresh token</b></summary>
-  
-      1. Open the response and show the body: ![response_show_body.jpg](doc%2Fresponse_show_body.jpg)
-      2. Get the content of `ClientId`: ![request_body.jpg](doc/response_body.jpg)
-    </details>
-
-  *  Get the **mac address**: Select one request with this url `https://fxtj7xkgc6.execute-api.eu-central-1.amazonaws.com` and in the body we have the value for the mac address
+6. Enter the mac address, username and password.
 
 ## Tested device :
 
@@ -74,9 +51,11 @@ In my case, I used a proxy application (Proxyman on IOS).
   - motherboard : `1.58.201215a` - `1.0.200824a`
   - wifi_ble_module : `1.0_20` - `1.0.200824a`
 
-## Todo:
+## External dependencies
 
-- [x] validate mac address provided 
+- This project uses the  [edilkamin.py](https://github.com/AndreMiras/edilkamin.py) under MIT licence
+
+## Todo:
 - [ ] create test
 
 
