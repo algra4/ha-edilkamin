@@ -1,35 +1,48 @@
-"""Edilkamin async api."""
+import asyncio
 import json
 import logging
-import asyncio
-import async_timeout
-import aiohttp
-from aiohttp import ClientSession
 
-from custom_components.edilkamin.api.auth import Auth
+import aiohttp
+import async_timeout
+import edilkamin
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class EdilkaminAsyncApi:
-    """Edilkamin async API."""
+    """
+    This class provides asynchronous API methods to communicate with an Edilkamin device.
+
+    Args:
+        mac_address (str): The MAC address of the device.
+        username (str): The username for authentication.
+        password (str): The password for authentication.
+
+    Attributes:
+        endpoint_api (str): The API endpoint URL.
+        url_command (str): The URL for sending commands to the device.
+        mac_address (str): The MAC address of the device.
+        url_info (str): The URL for getting device information.
+    """
 
     endpoint_api = "https://fxtj7xkgc6.execute-api.eu-central-1.amazonaws.com"
     url_command = "{}{}".format(endpoint_api, "/prod/mqtt/command")
 
-    def __init__(self, mac_address, refresh_token, client_id, session=ClientSession):
+    def __init__(self, mac_address, username, password):
         """Initialize the class."""
         self.mac_address = mac_address
-        self.refresh_token = refresh_token
         self.url_info = f"{self.endpoint_api}/prod/device/{mac_address}/info"
         _LOGGER.debug("Url info = %s", self.url_info)
         _LOGGER.debug("Url command = %s", self.url_command)
-        self.session = session
-        self.auth = Auth(self.session, self.refresh_token, client_id=client_id)
+        self.username = username
+        self.password = password
 
     def get_mac_address(self):
         """Get the mac address."""
         return self.mac_address
+
+    def authenticate(self) -> bool:
+        return not self.get_token()
 
     async def get_temperature(self):
         """Get the temperature."""
@@ -189,7 +202,7 @@ class EdilkaminAsyncApi:
                     str(method),
                     str(body),
                 )
-                headers = await self.get_headers()
+                headers = self.get_headers()
                 response = await self.session.request(
                     method, url, headers=headers, data=body
                 )
@@ -228,11 +241,24 @@ class EdilkaminAsyncApi:
             raise HttpException(message, "Time out", 408)
         return data
 
-    async def get_headers(self):
+    def get_headers(self):
         headers = {}
-        token = await self.auth.get_token()
+        token = self.get_token()
         headers["Authorization"] = f"Bearer {token}"
         return headers
+
+    def get_token(self) -> str:
+        """
+        Get the authentication token.
+
+        This method retrieves the authentication token by signing in
+        with the provided username and password.
+
+        Returns:
+            str: The authentication token.
+
+        """
+        return edilkamin.sign_in(self.username, self.password)
 
 
 class HttpException(Exception):
@@ -241,6 +267,5 @@ class HttpException(Exception):
     def __init__(self, message, text, status_code):
         """Initialize the class."""
         super().__init__(message)
-
         self.status_code = status_code
         self.text = text

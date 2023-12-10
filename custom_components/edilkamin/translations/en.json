@@ -12,8 +12,8 @@
       "user": {
         "data": {
           "mac_address": "Mac address",
-          "refresh_token": "Refresh token",
-          "client_id": "Client id"
+          "username": "Username",
+          "password": "Password"
         }
       }
     }
