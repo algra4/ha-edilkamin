@@ -7,7 +7,7 @@ from homeassistant.components.climate import (
     HVACMode,
     ClimateEntityFeature,
 )
-from homeassistant.const import TEMP_CELSIUS, ATTR_TEMPERATURE
+from homeassistant.const import UnitOfTemperature, ATTR_TEMPERATURE
 
 from .const import DOMAIN
 from custom_components.edilkamin.api.edilkamin_async_api import (
@@ -50,7 +50,7 @@ class EdilkaminClimateEntity(ClimateEntity):
     @property
     def temperature_unit(self):
         """The unit of temperature measurement"""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def current_temperature(self):
