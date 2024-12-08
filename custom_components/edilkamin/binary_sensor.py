@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from homeassistant.components.binary_sensor import (
-    DEVICE_CLASS_PROBLEM,
+    BinarySensorDeviceClass,
     BinarySensorEntity,
 )
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -44,7 +44,7 @@ class EdilkaminTankBinarySensor(BinarySensorEntity):
     @property
     def device_class(self):
         """Return the class of the binary sensor."""
-        return DEVICE_CLASS_PROBLEM
+        return BinarySensorDeviceClass.PROBLEM
 
     @property
     def unique_id(self):
@@ -77,7 +77,7 @@ class EdilkaminCheckBinarySensor(BinarySensorEntity):
     @property
     def device_class(self):
         """Return the class of the binary sensor."""
-        return DEVICE_CLASS_PROBLEM
+        return BinarySensorDeviceClass.PROBLEM
 
     @property
     def unique_id(self):

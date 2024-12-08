@@ -5,7 +5,10 @@ import logging
 import math
 
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.components.fan import SUPPORT_SET_SPEED, FanEntity
+from homeassistant.components.fan import (
+    FanEntityFeature,
+    FanEntity
+)
 from homeassistant.util.percentage import (
     int_states_in_range,
     percentage_to_ranged_value,
@@ -62,7 +65,7 @@ class EdilkaminFan(FanEntity):
     @property
     def supported_features(self) -> int:
         """Flag supported features."""
-        return SUPPORT_SET_SPEED
+        return FanEntityFeature.SET_SPEED
 
     async def async_set_percentage(self, percentage: int) -> None:
         """Set the speed of the fan, as a percentage."""
