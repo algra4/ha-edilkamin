@@ -4,7 +4,9 @@
   "config_flow": true,
   "integration_type": "hub",
   "documentation": "https://github.com/algra4/edilkamin",
-  "requirements": [],
+  "requirements": [
+    "pycognito==2024.5.1"
+  ],
   "ssdp": [],
   "zeroconf": [],
   "homekit": {},

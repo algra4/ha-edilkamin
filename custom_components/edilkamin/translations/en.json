@@ -5,15 +5,15 @@
     },
     "error": {
       "cannot_connect": "Failed to connect",
-      "invalid_auth": "Invalid authentication",
+      "invalid_auth": "Credentials invalid",
       "unknown": "Unexpected error"
     },
     "step": {
       "user": {
         "data": {
           "mac_address": "Mac address",
-          "refresh_token": "Refresh token",
-          "client_id": "Client id"
+          "username": "Username",
+          "password": "Password"
         }
       }
     }
