@@ -1,40 +1,49 @@
 """Platform for sensor integration."""
+
 from __future__ import annotations
 
 import logging
 import time
 from typing import Any
 
-from homeassistant.const import UnitOfTemperature
-
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-    SensorEntity,
-    SensorEntityDescription,
-    SensorStateClass,
+from custom_components.edilkamin.api.edilkamin_async_api import (
+    EdilkaminAsyncApi,
+    HttpException,
 )
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfTemperature
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
-from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi, HttpException
 
 _LOGGER = logging.getLogger(__name__)
 
 
-# https://github.com/home-assistant/example-custom-config/blob/master/custom_components/detailed_hello_world_push/sensor.py
-async def async_setup_entry(hass, config_entry, async_add_devices):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_devices: AddEntitiesCallback,
+):
     """Add sensors for passed config_entry in HA."""
 
     async_api = hass.data[DOMAIN][config_entry.entry_id]
 
-    async_add_devices(
-        [
-            EdilkaminTemperatureSensor(async_api),
-            EdilkaminFan1Sensor(async_api),
-            EdilkaminAlarmSensor(async_api),
-            EdilkaminActualPowerSensor(async_api),
-        ]
-    )
+    sensors = [
+        EdilkaminTemperatureSensor(async_api),
+        EdilkaminFanSensor(async_api, 1),
+        EdilkaminAlarmSensor(async_api),
+        EdilkaminActualPowerSensor(async_api),
+    ]
+
+    nb_fans = await async_api.get_nb_fans()
+
+    if nb_fans > 1:
+        sensors.extend(EdilkaminFanSensor(async_api, i) for i in range(2, nb_fans + 1))
+
+    async_add_devices(sensors)
 
 
 class EdilkaminTemperatureSensor(SensorEntity):
@@ -75,15 +84,16 @@ class EdilkaminTemperatureSensor(SensorEntity):
             return
 
 
-class EdilkaminFan1Sensor(SensorEntity):
+class EdilkaminFanSensor(SensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, api: EdilkaminAsyncApi, index: int):
         """Initialize the sensor."""
         self._state = None
         self.api = api
         self.mac_address = api.get_mac_address()
         self._attr_icon = "mdi:fan"
+        self._index = index
 
     @property
     def device_class(self):
@@ -93,7 +103,7 @@ class EdilkaminFan1Sensor(SensorEntity):
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_fan1_sensor"
+        return f"{self.mac_address}_fan{self._index}_sensor"
 
     @property
     def state(self):
@@ -103,7 +113,7 @@ class EdilkaminFan1Sensor(SensorEntity):
     async def async_update(self) -> None:
         """Fetch new state data for the sensor."""
         try:
-            self._state = await self.api.get_fan_1_speed()
+            self._state = await self.api.get_fan_speed(self._index)
         except HttpException as err:
             _LOGGER.error(str(err))
             return
