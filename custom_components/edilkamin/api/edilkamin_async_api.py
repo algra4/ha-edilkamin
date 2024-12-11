@@ -1,5 +1,4 @@
 import logging
-import typing
 
 import edilkamin
 
@@ -121,15 +120,31 @@ class EdilkaminAsyncApi:
             .get("is_pellet_in_reserve")
         )
 
-    async def get_fan_1_speed(self):
-        """Get the speed of fan 1."""
-        _LOGGER.debug("Get speed for fan 1")
-        return (await self.get_info()).get("status").get("fans").get("fan_1_speed")
+    async def get_nb_fans(self):
+        """Get the number of fans."""
+        return (
+            (await self.get_info())
+            .get("nvm")
+            .get("installer_parameters")
+            .get("fans_number")
+        )
 
-    async def set_fan_1_speed(self, value):
+    async def get_fan_speed(self, index=1):
+        """Get the speed of fan ."""
+        _LOGGER.debug("Get speed for fan 1")
+        return (
+            (await self.get_info())
+            .get("status")
+            .get("fans")
+            .get("fan_" + str(index) + "_speed")
+        )
+
+    async def set_fan_speed(self, value, index=1):
         """Set the speed of fan 1."""
         _LOGGER.debug("Set speed for fan 1 to %s", value)
-        await self.execute_command({"name": "fan_1_speed", "value": value})
+        await self.execute_command(
+            {"name": "fan_" + str(index) + "_speed", "value": value}
+        )
 
     async def check(self):
         """Call check config."""
