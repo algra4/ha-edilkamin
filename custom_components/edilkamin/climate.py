@@ -110,7 +110,7 @@ class EdilkaminClimateEntity(ClimateEntity):
         try:
             self._current_temperature = await self.api.get_temperature()
             self._target_temperature = await self.api.get_target_temperature()
-            self._fan1_speed = await self.api.get_fan_1_speed()
+            self._fan1_speed = await self.api.get_fan_speed()
 
             power = await self.api.get_power_status()
             if power is True:
