@@ -1,4 +1,5 @@
 """Platform for climate integration."""
+
 from __future__ import annotations
 
 import logging
@@ -18,6 +19,7 @@ from custom_components.edilkamin.api.edilkamin_async_api import (
 _LOGGER = logging.getLogger(__name__)
 
 CLIMATE_HVAC_MODE_MANAGED = [HVACMode.HEAT, HVACMode.OFF]
+
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
@@ -58,7 +60,7 @@ class EdilkaminClimateEntity(ClimateEntity):
         return self._current_temperature
 
     @property
-    def hvac_mode(self) -> HVACMode :
+    def hvac_mode(self) -> HVACMode:
         """The current operation ."""
         return self._hvac_mode
 
@@ -130,7 +132,7 @@ class EdilkaminClimateEntity(ClimateEntity):
         if hvac_mode == HVACMode.OFF:
             return await self.async_turn_off()
 
-        if hvac_mode == HVACMode.HEAT :
+        if hvac_mode == HVACMode.HEAT:
             return await self.async_turn_on()
 
         _LOGGER.info("Setting operation mode to %s", hvac_mode)
@@ -140,7 +142,6 @@ class EdilkaminClimateEntity(ClimateEntity):
         """Turn on."""
         _LOGGER.debug("Turning %s on", self.unique_id)
         await self.api.enable_power()
-
 
     async def async_turn_off(self):
         """Turn off."""

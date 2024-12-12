@@ -29,7 +29,7 @@ class EdilkaminAsyncApi:
                 edilkamin.sign_in, self._username, self._password
             )
             return True
-        except Exception as exception:
+        except Exception:
             return False
 
     async def get_temperature(self):

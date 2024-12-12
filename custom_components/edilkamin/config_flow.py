@@ -1,4 +1,5 @@
 """Config flow for Edilkamin integration."""
+
 from __future__ import annotations
 
 import logging
@@ -20,7 +21,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(MAC_ADDRESS): str,
         vol.Required(USERNAME): str,
-        vol.Required(PASSWORD): str
+        vol.Required(PASSWORD): str,
     }
 )
 
@@ -36,10 +37,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     password = data[PASSWORD]
 
     api = EdilkaminAsyncApi(
-        mac_address=mac_address,
-        username=username,
-        password=password,
-        hass=hass
+        mac_address=mac_address, username=username, password=password, hass=hass
     )
 
     if not await api.authenticate():
