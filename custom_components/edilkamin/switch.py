@@ -1,12 +1,15 @@
 """Platform for sensor integration."""
+
 from __future__ import annotations
 
 import logging
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import DOMAIN
-from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi, HttpException
+from custom_components.edilkamin.api.edilkamin_async_api import (
+    EdilkaminAsyncApi,
+    HttpException,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +23,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
             EdilkaminAirekareSwitch(async_api),
             EdilkaminPowerSwitch(async_api),
             EdilkaminRelaxSwitch(async_api),
-            EdilkaminChronoModeSwitch(async_api)
+            EdilkaminChronoModeSwitch(async_api),
         ]
     )
 
@@ -133,6 +136,7 @@ class EdilkaminRelaxSwitch(SwitchEntity):
         except HttpException as err:
             _LOGGER.error(str(err))
             return
+
 
 class EdilkaminChronoModeSwitch(SwitchEntity):
     """Representation of a Sensor."""

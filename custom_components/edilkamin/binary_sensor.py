@@ -1,4 +1,5 @@
 """Platform for sensor integration."""
+
 from __future__ import annotations
 
 import logging
@@ -6,10 +7,12 @@ from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import DOMAIN
-from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi, HttpException
+from custom_components.edilkamin.api.edilkamin_async_api import (
+    EdilkaminAsyncApi,
+    HttpException,
+)
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -1,7 +1,6 @@
 """The Edilkamin integration."""
-from __future__ import annotations
 
-import logging
+from __future__ import annotations
 
 from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
 
@@ -11,7 +10,13 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, MAC_ADDRESS, PASSWORD, USERNAME
 
-PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH, Platform.FAN, Platform.CLIMATE]
+PLATFORMS: list[Platform] = [
+    Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.SWITCH,
+    Platform.FAN,
+    Platform.CLIMATE,
+]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -22,10 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     password = entry.data[PASSWORD]
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = EdilkaminAsyncApi(
-        mac_address=mac_address,
-        username=username,
-        password=password,
-        hass=hass
+        mac_address=mac_address, username=username, password=password, hass=hass
     )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
