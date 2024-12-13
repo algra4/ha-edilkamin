@@ -17,7 +17,12 @@ from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+)
+
 from .const import DOMAIN
+from .coordinator import EdilkaminCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,9 +35,10 @@ async def async_setup_entry(
     """Add sensors for passed config_entry in HA."""
 
     async_api = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = hass.data[DOMAIN]["coordinator"]
 
     sensors = [
-        EdilkaminTemperatureSensor(async_api),
+        EdilkaminTemperatureSensor(coordinator),
         EdilkaminFanSensor(async_api, 1),
         EdilkaminAlarmSensor(async_api),
         EdilkaminActualPowerSensor(async_api),
@@ -46,14 +52,14 @@ async def async_setup_entry(
     async_add_devices(sensors)
 
 
-class EdilkaminTemperatureSensor(SensorEntity):
+class EdilkaminTemperatureSensor(CoordinatorEntity, SensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, coordinator) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self.mac_address = self.coordinator.get_mac_address()
 
     @property
     def device_class(self):
@@ -75,13 +81,10 @@ class EdilkaminTemperatureSensor(SensorEntity):
         """Return the state of the sensor."""
         return self._state
 
-    async def async_update(self) -> None:
-        """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_temperature()
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._state = self.coordinator.get_temperature()
+        self.async_write_ha_state()
 
 
 class EdilkaminFanSensor(SensorEntity):

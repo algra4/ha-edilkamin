@@ -17,6 +17,11 @@ PLATFORMS: list[Platform] = [
     Platform.FAN,
     Platform.CLIMATE,
 ]
+import logging
+
+from .coordinator import EdilkaminCoordinator
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -26,9 +31,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     username = entry.data[USERNAME]
     password = entry.data[PASSWORD]
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = EdilkaminAsyncApi(
+    coordinator = EdilkaminCoordinator(hass, username, password, mac_address)
+
+    # Force first fetch data
+    await coordinator.async_refresh()
+
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = EdilkaminAsyncApi(
         mac_address=mac_address, username=username, password=password, hass=hass
     )
+    hass.data[DOMAIN]["coordinator"] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
