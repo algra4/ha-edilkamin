@@ -5,7 +5,8 @@
   "integration_type": "hub",
   "documentation": "https://github.com/algra4/edilkamin",
   "requirements": [
-    "edilkamin==1.4.1"
+    "edilkamin==1.4.1",
+    "macaddress==2.0.2"
   ],
   "ssdp": [],
   "zeroconf": [],

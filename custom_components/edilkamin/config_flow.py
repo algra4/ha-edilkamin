@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
+import macaddress
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -35,6 +36,16 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             mac_address = user_input[MAC_ADDRESS]
+
+            try:
+                macaddress.MAC(mac_address)
+            except ValueError as error:
+                _LOGGER.error("Invalid mac address: %s", error)
+                errors["base"] = "mac_address"
+                return self.async_show_form(
+                    step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+                )
+
             username = user_input[USERNAME]
             password = user_input[PASSWORD]
             api = EdilkaminAsyncApi(
@@ -61,6 +72,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
+
 
 class InvalidMacAddress(HomeAssistantError):
     """Error to indicate there is invalid mac address."""

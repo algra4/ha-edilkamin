@@ -1,1 +1,2 @@
-edilkamin>=1.3.0
+edilkamin==1.3.0
+macaddress==2.0.2
