@@ -3,41 +3,45 @@
 from __future__ import annotations
 
 import logging
-from homeassistant.components.binary_sensor import (
-    BinarySensorDeviceClass,
-    BinarySensorEntity,
-)
 
-from .const import DOMAIN
 from custom_components.edilkamin.api.edilkamin_async_api import (
     EdilkaminAsyncApi,
     HttpException,
 )
+
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntity,
+)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
+    coordinator = hass.data[DOMAIN]["coordinator"]
     async_api = hass.data[DOMAIN][config_entry.entry_id]
 
     async_add_devices(
         [
-            EdilkaminTankBinarySensor(async_api),
+            EdilkaminTankBinarySensor(coordinator),
             EdilkaminCheckBinarySensor(async_api),
         ]
     )
 
 
-class EdilkaminTankBinarySensor(BinarySensorEntity):
+class EdilkaminTankBinarySensor(CoordinatorEntity, BinarySensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, coordinator) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
-        self._attr_icon = "mdi:propane-tank"
+        self._mac_address = self.coordinator.get_mac_address()
+        self._attr_icon = "mdi:storage-tank"
 
     @property
     def is_on(self):
@@ -52,25 +56,22 @@ class EdilkaminTankBinarySensor(BinarySensorEntity):
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_tank_binary_sensor"
+        return f"{self._mac_address}_tank_binary_sensor"
 
-    async def async_update(self) -> None:
+    def _handle_coordinator_update(self) -> None:
         """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_status_tank()
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+        self._state = self.coordinator.get_status_tank()
+        self.async_write_ha_state()
 
 
 class EdilkaminCheckBinarySensor(BinarySensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, api: EdilkaminAsyncApi) -> None:
         """Initialize the sensor."""
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self._api = api
+        self._mac_address = self._api.get_mac_address()
 
     @property
     def is_on(self):
@@ -85,12 +86,12 @@ class EdilkaminCheckBinarySensor(BinarySensorEntity):
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_check_binary_sensor"
+        return f"{self._mac_address}_check_binary_sensor"
 
     async def async_update(self) -> None:
         """Fetch new state data for the sensor."""
         try:
-            await self.api.check()
+            await self._api.check()
             self._state = False
             self.async_write_ha_state()
         except HttpException as err:

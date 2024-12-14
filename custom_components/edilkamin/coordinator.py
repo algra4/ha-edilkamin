@@ -102,3 +102,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
     def get_actual_power(self) -> str:
         """Get the actual power."""
         return self._device_info.get("status").get("state").get("actual_power")
+
+    def get_status_tank(self) -> str:
+        """Get the status of the tank."""
+        return self._device_info.get("status").get("flags").get("is_pellet_in_reserve")
