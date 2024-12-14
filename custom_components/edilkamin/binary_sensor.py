@@ -6,7 +6,6 @@ import logging
 
 from custom_components.edilkamin.api.edilkamin_async_api import (
     EdilkaminAsyncApi,
-    HttpException,
 )
 
 from homeassistant.components.binary_sensor import (
@@ -43,6 +42,8 @@ class EdilkaminTankBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:storage-tank"
 
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+
     @property
     def is_on(self):
         """Return True if the binary sensor is on."""
@@ -73,6 +74,9 @@ class EdilkaminCheckBinarySensor(BinarySensorEntity):
         self._api = api
         self._mac_address = self._api.get_mac_address()
 
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:check-circle"
+
     @property
     def is_on(self):
         """Return True if the binary sensor is on."""
@@ -94,7 +98,9 @@ class EdilkaminCheckBinarySensor(BinarySensorEntity):
             await self._api.check()
             self._state = False
             self.async_write_ha_state()
-        except HttpException as err:
+        except Exception as err:
+            _LOGGER.error("Exception type: %s", err)
+            _LOGGER.error("Exception message: %s", err)
             self._state = True
             _LOGGER.error(str(err))
-            return
+            self.async_write_ha_state()

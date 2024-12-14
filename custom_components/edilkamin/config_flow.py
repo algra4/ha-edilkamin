@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
 import macaddress
@@ -46,6 +45,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
                 )
 
+            # Check if a stove with the same mac address is already configured
+            await self.async_set_unique_id(mac_address)
+            self._abort_if_unique_id_configured()
+
             username = user_input[USERNAME]
             password = user_input[PASSWORD]
             api = EdilkaminAsyncApi(
@@ -55,7 +58,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 hass=self.hass,
             )
             try:
-                await api.authenticate()
+                if await api.authenticate():
+                    return self.async_create_entry(
+                        title=mac_address.replace(":", ""), data=user_input
+                    )
+
+                errors["base"] = "invalid_auth"
             except Exception as exception:  # noqa: BLE001
                 exception_type = type(exception).__name__
                 _LOGGER.error("Exception type: %s", exception_type)
@@ -64,10 +72,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     errors["base"] = "invalid_auth"
                 else:
                     errors["base"] = "unknown"
-            else:
-                return self.async_create_entry(
-                    title=mac_address.replace(":", ""), data=user_input
-                )
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors

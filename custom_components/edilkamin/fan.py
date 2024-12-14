@@ -48,6 +48,7 @@ class EdilkaminFan(FanEntity):
         self._index = index
         self._current_speed = None
         self._current_state = False
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
     def unique_id(self):

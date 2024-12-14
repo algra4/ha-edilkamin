@@ -14,7 +14,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .coordinator import EdilkaminCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,6 +53,9 @@ class EdilkaminTemperatureSensor(CoordinatorEntity, SensorEntity):
         self._state = None
         self._mac_address = self.coordinator.get_mac_address()
 
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:thermometer"
+
     @property
     def device_class(self):
         """Return the class of this device, from component DEVICE_CLASSES."""
@@ -91,6 +93,8 @@ class EdilkaminFanSensor(CoordinatorEntity, SensorEntity):
         self._attr_icon = "mdi:fan"
         self._index = index
 
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+
     @property
     def device_class(self):
         """Return the class of this device, from component DEVICE_CLASSES."""
@@ -122,6 +126,8 @@ class EdilkaminAlarmSensor(CoordinatorEntity, SensorEntity):
         self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:alert"
         self._attributes: dict[str, Any] = {}
+
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
     def device_class(self):
@@ -173,6 +179,9 @@ class EdilkaminActualPowerSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
         self._state = None
         self._mac_address = self.coordinator.get_mac_address()
+
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:flash"
 
     @property
     def device_class(self):
