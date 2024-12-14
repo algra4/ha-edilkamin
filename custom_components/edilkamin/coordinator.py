@@ -25,7 +25,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name="Edilkamin coordinator",
-            update_interval=timedelta(seconds=10),
+            update_interval=timedelta(seconds=15),
         )
         self._username = username
         self._password = password
@@ -106,3 +106,23 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
     def get_status_tank(self) -> str:
         """Get the status of the tank."""
         return self._device_info.get("status").get("flags").get("is_pellet_in_reserve")
+
+    def get_airkare_status(self) -> str:
+        """Get the status of the airkare."""
+        return self._device_info.get("status").get("flags").get("is_airkare_active")
+
+    def get_power_status(self) -> str:
+        """Get the status of the power."""
+        return self._device_info.get("status").get("commands").get("power")
+
+    def get_relax_status(self) -> str:
+        """Get the status of the relax."""
+        return self._device_info.get("status").get("flags").get("is_relax_active")
+
+    def get_target_temperature(self) -> str:
+        """Get the target temperature."""
+        return self._device_info.get("nvm").get("chrono").get("is_active")
+
+    def get_chrono_mode_status(self) -> str:
+        """Get the status of the chrono mode."""
+        return self._device_info.get("nvm").get("chrono").get("is_active")
