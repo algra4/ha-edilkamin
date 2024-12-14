@@ -33,7 +33,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = EdilkaminCoordinator(hass, username, password, mac_address)
 
-    # Force first fetch data
+    # First refresh
     await coordinator.async_refresh()
 
     hass.data.setdefault(DOMAIN, {})

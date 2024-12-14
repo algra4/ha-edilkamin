@@ -2,10 +2,10 @@ from datetime import timedelta
 import logging
 
 import async_timeout
+from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
 
 import edilkamin
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name="Edilkamin coordinator",
-            update_interval=timedelta(seconds=240),
+            update_interval=timedelta(seconds=10),
         )
         self._username = username
         self._password = password
@@ -53,6 +53,8 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         """Fetch data from the API."""
         try:
+            # Note: asyncio.TimeoutError and aiohttp.ClientError are already
+            # handled by the data update coordinator.
             async with async_timeout.timeout(10):
                 self._device_info = await self.update_device_information()
                 _LOGGER.debug("Data updated successfully")
@@ -61,14 +63,42 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
         except Exception as err:
             raise UpdateFailed("Error communicating with API") from err
 
-    def get_token(self):
+    def get_token(self) -> str:
         """Return the current token."""
         return self._token
 
-    def get_mac_address(self):
+    def get_mac_address(self) -> str:
         """Return the MAC address."""
         return self._mac_address
 
-    def get_temperature(self):
+    def get_temperature(self) -> str:
         """Get the temperature."""
         return self._device_info.get("status").get("temperatures").get("enviroment")
+
+    def get_fan_speed(self, index: int = 1) -> str:
+        """Get the fan speed."""
+        return (
+            self._device_info.get("status")
+            .get("fans")
+            .get("fan_" + str(index) + "_speed")
+        )
+
+    def get_nb_fans(self):
+        """Get the number of fans."""
+        return (
+            self._device_info.get("nvm").get("installer_parameters").get("fans_number")
+        )
+
+    def get_nb_alarms(self) -> str:
+        """Get the number of alarms."""
+        return self._device_info.get("nvm").get("alarms_log").get("index")
+
+    def get_alarms(self) -> list:
+        """Get the alarms."""
+        alarms_info = self._device_info.get("nvm").get("alarms_log")
+        index = alarms_info.get("index")
+        return [alarms_info.get("alarms")[i] for i in range(index)]
+
+    def get_actual_power(self) -> str:
+        """Get the actual power."""
+        return self._device_info.get("status").get("state").get("actual_power")
