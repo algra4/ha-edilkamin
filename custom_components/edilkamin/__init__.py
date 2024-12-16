@@ -63,8 +63,8 @@ def register_device(hass: HomeAssistant, config_entry, mac_address):
     device_registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
         identifiers={("edilkamin", mac_address)},
-        manufacturer="EdilKamin",
-        name="EdilKamin Stove",
+        manufacturer="Edilkamin",
+        name="Edilkamin Stove",
         model="The Mind",
         suggested_area="Living Room",
         connections={(dr.CONNECTION_NETWORK_MAC, mac_address)},
