@@ -94,7 +94,7 @@ class EdilkaminClimateEntity(ClimateEntity):
     async def async_set_fan_mode(self, fan_mode):
         """Set new target fan mode."""
         try:
-            await self.api.set_fan_1_speed(fan_mode)
+            await self.api.set_fan_speed(fan_mode)
         except HttpException as err:
             _LOGGER.error(str(err))
             return
