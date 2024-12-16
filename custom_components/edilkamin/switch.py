@@ -39,6 +39,7 @@ class EdilkaminAirekareSwitch(CoordinatorEntity, SwitchEntity):
         self._api = api
         self._mac_address = api.get_mac_address()
         self._attr_icon = "mdi:air-filter"
+        self._attr_name = "Airekare"
 
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
@@ -73,6 +74,7 @@ class EdilkaminRelaxSwitch(CoordinatorEntity, SwitchEntity):
         self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:weather-night"
 
+        self._attr_name = "Relax mode"
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
@@ -107,6 +109,7 @@ class EdilkaminChronoModeSwitch(CoordinatorEntity, SwitchEntity):
         self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:calendar-clock"
 
+        self._attr_name = "Chrono mode"
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
