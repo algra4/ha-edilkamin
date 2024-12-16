@@ -3,7 +3,7 @@
   "name": "Edilkamin",
   "config_flow": true,
   "integration_type": "device",
-  "documentation": "https://github.com/algra4/edilkamin",
+  "documentation": "https://github.com/algra4/ha-edilkamin",
   "requirements": [
     "edilkamin==1.4.1",
     "macaddress==2.0.2"
