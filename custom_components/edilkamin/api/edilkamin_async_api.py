@@ -34,85 +34,64 @@ class EdilkaminAsyncApi:
 
     async def get_temperature(self):
         """Get the temperature."""
-        _LOGGER.debug("Get temperature")
-        result = (
-            (await self.get_info()).get("status").get("temperatures").get("enviroment")
-        )
-        _LOGGER.debug("Get temperature response  = %s", result)
-        return result
+        return (await self.get_info()).get("status").get("temperatures").get("enviroment")
 
     async def set_temperature(self, value):
         """Modify the temperature."""
-        _LOGGER.debug("Set temperature to = %s", value)
         await self.execute_command({"name": "enviroment_1_temperature", "value": value})
 
     async def get_power_status(self):
         """Get the power status."""
-        _LOGGER.debug("Get power")
-        result = (await self.get_info()).get("status").get("commands").get("power")
-        _LOGGER.debug("Get power response  = %s", result)
-        return result
+        return (await self.get_info()).get("status").get("commands").get("power")
 
     async def enable_power(self):
         """Set the power status to on."""
-        _LOGGER.debug("Enable power")
         await self.execute_command({"name": "power", "value": 1})
 
     async def disable_power(self):
         """Set the power status to off."""
-        _LOGGER.debug("Disable power")
         await self.execute_command({"name": "power", "value": 0})
 
     async def get_chrono_mode_status(self):
         """Get the status of the chrono mode."""
-        _LOGGER.debug("Get the chrono mode")
         return (await self.get_info()).get("nvm").get("chrono").get("is_active")
 
     async def enable_chrono_mode(self):
         """Enable the chrono mode."""
-        _LOGGER.debug("Enable chrono mode")
         await self.execute_command({"name": "chrono_mode", "value": True})
 
     async def disable_chrono_mode(self):
         """Disable the chono mode."""
-        _LOGGER.debug("Disable chrono mode")
         await self.execute_command({"name": "chrono_mode", "value": False})
 
     async def get_airkare_status(self):
         """Get status of airekare."""
-        _LOGGER.debug("Get airkare status")
         return (
             (await self.get_info()).get("status").get("flags").get("is_airkare_active")
         )
 
     async def enable_airkare(self):
         """Enable airkare."""
-        _LOGGER.debug("Enable airkare")
         await self.execute_command({"name": "airkare_function", "value": 1})
 
     async def disable_airkare(self):
         """Disable airkare."""
-        _LOGGER.debug("Disable airkare")
         await self.execute_command({"name": "airkare_function", "value": 0})
 
     async def get_relax_status(self):
         """Get the status of relax mode."""
-        _LOGGER.debug("Get relax status")
         return (await self.get_info()).get("status").get("flags").get("is_relax_active")
 
     async def enable_relax(self):
         """Enable relax."""
-        _LOGGER.debug("Enable relax")
         await self.execute_command({"name": "relax_mode", "value": True})
 
     async def disable_relax(self):
         """Disable relax."""
-        _LOGGER.debug("Disable relax")
         await self.execute_command({"name": "relax_mode", "value": False})
 
     async def get_status_tank(self):
         """Get the status of the tank."""
-        _LOGGER.debug("Get tank status")
         return (
             (await self.get_info())
             .get("status")
@@ -131,8 +110,7 @@ class EdilkaminAsyncApi:
 
     async def get_fan_speed(self, index=1):
         """Get the speed of fan ."""
-        _LOGGER.debug("Get speed for fan 1")
-        return (
+        return int(
             (await self.get_info())
             .get("status")
             .get("fans")
@@ -141,19 +119,16 @@ class EdilkaminAsyncApi:
 
     async def set_fan_speed(self, value, index=1):
         """Set the speed of fan 1."""
-        _LOGGER.debug("Set speed for fan 1 to %s", value)
         await self.execute_command(
-            {"name": "fan_" + str(index) + "_speed", "value": value}
+            {"name": "fan_" + str(index) + "_speed", "value": int(value)}
         )
 
     async def check(self):
         """Call check config."""
-        _LOGGER.debug("Check config")
         await self.execute_command({"name": "check", "value": False})
 
     async def get_target_temperature(self):
         """Get the target temperature."""
-        _LOGGER.debug("Get the target temperature")
         return (
             (await self.get_info())
             .get("nvm")
@@ -163,12 +138,10 @@ class EdilkaminAsyncApi:
 
     async def get_actual_power(self):
         """Get the power status."""
-        _LOGGER.debug("Get power")
         return (await self.get_info()).get("status").get("state").get("actual_power")
 
     async def get_alarms(self):
         """Get the target temperature."""
-        _LOGGER.debug("Get the target temperature")
         alarms_info = (await self.get_info()).get("nvm").get("alarms_log")
         index = alarms_info.get("index")
         alarms = []
@@ -180,7 +153,6 @@ class EdilkaminAsyncApi:
 
     async def get_nb_alarms(self):
         """Get the target temperature."""
-        _LOGGER.debug("Get the target temperature")
         return (await self.get_info()).get("nvm").get("alarms_log").get("index")
 
     async def get_token(self):
@@ -198,6 +170,7 @@ class EdilkaminAsyncApi:
     async def execute_command(self, payload: dict) -> str:
         """Execute the command."""
         token = await self.get_token()
+        _LOGGER.debug("Execute command with payload = %s", payload)
         return await self._hass.async_add_executor_job(
             edilkamin.mqtt_command, token, self._mac_address, payload
         )
