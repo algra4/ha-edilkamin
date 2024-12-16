@@ -53,6 +53,7 @@ class EdilkaminTemperatureSensor(CoordinatorEntity, SensorEntity):
         self._state = None
         self._mac_address = self.coordinator.get_mac_address()
 
+        self._attr_name = "Temperature"
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
         self._attr_icon = "mdi:thermometer"
 
@@ -93,6 +94,7 @@ class EdilkaminFanSensor(CoordinatorEntity, SensorEntity):
         self._attr_icon = "mdi:fan"
         self._index = index
 
+        self._attr_name = f"Fan {index}"
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
@@ -127,6 +129,7 @@ class EdilkaminAlarmSensor(CoordinatorEntity, SensorEntity):
         self._attr_icon = "mdi:alert"
         self._attributes: dict[str, Any] = {}
 
+        self._attr_name = "Nb alarms"
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
@@ -180,6 +183,7 @@ class EdilkaminActualPowerSensor(CoordinatorEntity, SensorEntity):
         self._state = None
         self._mac_address = self.coordinator.get_mac_address()
 
+        self._attr_name = "Actual power"
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
         self._attr_icon = "mdi:flash"
 
