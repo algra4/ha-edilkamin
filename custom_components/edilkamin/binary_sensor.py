@@ -42,6 +42,7 @@ class EdilkaminTankBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:storage-tank"
 
+        self._attr_name = "Tank"
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
@@ -74,6 +75,7 @@ class EdilkaminCheckBinarySensor(BinarySensorEntity):
         self._api = api
         self._mac_address = self._api.get_mac_address()
 
+        self._attr_name = "Check configuration"
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
         self._attr_icon = "mdi:check-circle"
 
