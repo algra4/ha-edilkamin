@@ -60,8 +60,8 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug("Data updated successfully")
                 _LOGGER.debug(self._device_info)
                 return self._device_info
-        except Exception as err:
-            raise UpdateFailed("Error communicating with API") from err
+        except:
+            raise UpdateFailed("Error communicating with API")
 
     def get_token(self) -> str:
         """Return the current token."""
@@ -121,7 +121,11 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
 
     def get_target_temperature(self) -> str:
         """Get the target temperature."""
-        return self._device_info.get("nvm").get("chrono").get("is_active")
+        return (
+            self._device_info.get("nvm")
+            .get("user_parameters")
+            .get("enviroment_1_temperature")
+        )
 
     def get_chrono_mode_status(self) -> str:
         """Get the status of the chrono mode."""
