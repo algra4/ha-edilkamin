@@ -23,7 +23,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_devices
     async_add_devices(
         [
             EdilkaminAirekareSwitch(async_api, coordinator),
-            EdilkaminPowerSwitch(async_api, coordinator),
             EdilkaminRelaxSwitch(async_api, coordinator),
             EdilkaminChronoModeSwitch(async_api, coordinator),
         ]
@@ -62,41 +61,6 @@ class EdilkaminAirekareSwitch(CoordinatorEntity, SwitchEntity):
         """Turn the entity off."""
         await self._api.disable_airkare()
         await self.coordinator.async_refresh()
-
-
-class EdilkaminPowerSwitch(CoordinatorEntity, SwitchEntity):
-    """Representation of a Sensor."""
-
-    def __init__(self, api: EdilkaminAsyncApi, coordinator) -> None:
-        """Initialize the sensor."""
-        super().__init__(coordinator)
-        self._state = None
-        self._api = api
-        self._mac_address = self.coordinator.get_mac_address()
-
-        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
-        self._attr_icon = "mdi:power"
-
-    @property
-    def is_on(self):
-        """Return True if the binary sensor is on."""
-        return self.coordinator.get_power_status()
-
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return f"{self._mac_address}_power_switch"
-
-    async def async_turn_on(self, **kwargs) -> None:
-        """Turn the entity on."""
-        await self._api.enable_power()
-        await self.coordinator.async_refresh()
-
-    async def async_turn_off(self, **kwargs):
-        """Turn the entity off."""
-        await self._api.disable_power()
-        await self.coordinator.async_refresh()
-
 
 class EdilkaminRelaxSwitch(CoordinatorEntity, SwitchEntity):
     """Representation of a Sensor."""
