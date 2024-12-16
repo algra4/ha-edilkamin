@@ -6,16 +6,12 @@ import logging
 import time
 from typing import Any
 
-from custom_components.edilkamin.api.edilkamin_async_api import (
-    EdilkaminAsyncApi,
-    HttpException,
-)
-
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 
@@ -29,31 +25,36 @@ async def async_setup_entry(
 ):
     """Add sensors for passed config_entry in HA."""
 
-    async_api = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = hass.data[DOMAIN]["coordinator"]
 
     sensors = [
-        EdilkaminTemperatureSensor(async_api),
-        EdilkaminFanSensor(async_api, 1),
-        EdilkaminAlarmSensor(async_api),
-        EdilkaminActualPowerSensor(async_api),
+        EdilkaminTemperatureSensor(coordinator),
+        EdilkaminFanSensor(coordinator, 1),
+        EdilkaminAlarmSensor(coordinator),
+        EdilkaminActualPowerSensor(coordinator),
     ]
 
-    nb_fans = await async_api.get_nb_fans()
+    nb_fans = coordinator.get_nb_fans()
 
     if nb_fans > 1:
-        sensors.extend(EdilkaminFanSensor(async_api, i) for i in range(2, nb_fans + 1))
+        sensors.extend(
+            EdilkaminFanSensor(coordinator, i) for i in range(2, nb_fans + 1)
+        )
 
     async_add_devices(sensors)
 
 
-class EdilkaminTemperatureSensor(SensorEntity):
+class EdilkaminTemperatureSensor(CoordinatorEntity, SensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, coordinator) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self._mac_address = self.coordinator.get_mac_address()
+
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:thermometer"
 
     @property
     def device_class(self):
@@ -68,33 +69,32 @@ class EdilkaminTemperatureSensor(SensorEntity):
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_temperature"
+        return f"{self._mac_address}_temperature"
 
     @property
     def state(self):
         """Return the state of the sensor."""
         return self._state
 
-    async def async_update(self) -> None:
-        """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_temperature()
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._state = self.coordinator.get_temperature()
+        self.async_write_ha_state()
 
 
-class EdilkaminFanSensor(SensorEntity):
+class EdilkaminFanSensor(CoordinatorEntity, SensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi, index: int):
+    def __init__(self, coordinator, index: int) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:fan"
         self._index = index
 
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+
     @property
     def device_class(self):
         """Return the class of this device, from component DEVICE_CLASSES."""
@@ -103,32 +103,31 @@ class EdilkaminFanSensor(SensorEntity):
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_fan{self._index}_sensor"
+        return f"{self._mac_address}_fan{self._index}_sensor"
 
     @property
     def state(self):
         """Return the state of the sensor."""
         return self._state
 
-    async def async_update(self) -> None:
+    def _handle_coordinator_update(self) -> None:
         """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_fan_speed(self._index)
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+        self._state = self.coordinator.get_fan_speed(self._index)
+        self.async_write_ha_state()
 
 
-class EdilkaminAlarmSensor(SensorEntity):
+class EdilkaminAlarmSensor(CoordinatorEntity, SensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, coordinator) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:alert"
         self._attributes: dict[str, Any] = {}
+
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
     def device_class(self):
@@ -138,7 +137,7 @@ class EdilkaminAlarmSensor(SensorEntity):
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_nb_alarms_sensor"
+        return f"{self._mac_address}_nb_alarms_sensor"
 
     @property
     def state(self):
@@ -150,40 +149,39 @@ class EdilkaminAlarmSensor(SensorEntity):
         """Return attributes for the sensor."""
         return self._attributes
 
-    async def async_update(self) -> None:
+    def _handle_coordinator_update(self) -> None:
         """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_nb_alarms()
-            alarms = await self.api.get_alarms()
+        self._state = self.coordinator.get_nb_alarms()
+        alarms = self.coordinator.get_alarms()
 
-            errors = {
-                "errors": [],
+        errors = {
+            "errors": [],
+        }
+
+        for alarm in alarms:
+            data = {
+                "type": alarm["type"],
+                "timestamp": time.strftime(
+                    "%d-%m-%Y %H:%M:%S", time.localtime(alarm["timestamp"])
+                ),
             }
+            errors["errors"].append(data)
 
-            for alarm in alarms:
-                data = {
-                    "type": alarm["type"],
-                    "timestamp": time.strftime(
-                        "%d-%m-%Y %H:%M:%S", time.localtime(alarm["timestamp"])
-                    ),
-                }
-                errors["errors"].append(data)
-
-            self._attributes = errors
-
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+        self._attributes = errors
+        self.async_write_ha_state()
 
 
-class EdilkaminActualPowerSensor(SensorEntity):
+class EdilkaminActualPowerSensor(CoordinatorEntity, SensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, coordinator) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self._mac_address = self.coordinator.get_mac_address()
+
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:flash"
 
     @property
     def device_class(self):
@@ -198,17 +196,14 @@ class EdilkaminActualPowerSensor(SensorEntity):
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_actual_power"
+        return f"{self._mac_address}_actual_power"
 
     @property
     def state(self):
         """Return the state of the sensor."""
         return self._state
 
-    async def async_update(self) -> None:
+    def _handle_coordinator_update(self) -> None:
         """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_actual_power()
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+        self._state = self.coordinator.get_actual_power()
+        self.async_write_ha_state()

@@ -3,173 +3,164 @@
 from __future__ import annotations
 
 import logging
+
+from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
+
 from homeassistant.components.switch import SwitchEntity
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from custom_components.edilkamin.api.edilkamin_async_api import (
-    EdilkaminAsyncApi,
-    HttpException,
-)
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config_entry, async_add_devices):
+async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
     async_api = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = hass.data[DOMAIN]["coordinator"]
 
     async_add_devices(
         [
-            EdilkaminAirekareSwitch(async_api),
-            EdilkaminPowerSwitch(async_api),
-            EdilkaminRelaxSwitch(async_api),
-            EdilkaminChronoModeSwitch(async_api),
+            EdilkaminAirekareSwitch(async_api, coordinator),
+            EdilkaminPowerSwitch(async_api, coordinator),
+            EdilkaminRelaxSwitch(async_api, coordinator),
+            EdilkaminChronoModeSwitch(async_api, coordinator),
         ]
     )
 
 
-class EdilkaminAirekareSwitch(SwitchEntity):
+class EdilkaminAirekareSwitch(CoordinatorEntity, SwitchEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, api: EdilkaminAsyncApi, coordinator) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self._api = api
+        self._mac_address = api.get_mac_address()
         self._attr_icon = "mdi:air-filter"
 
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+
     @property
     def is_on(self):
-        """Return True if the binary sensor is on."""
-        return self._state
+        """Return True if the switch sensor is on."""
+        return self.coordinator.get_airkare_status()
 
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_airekare_switch"
+        return f"{self._mac_address}_airekare_switch"
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
-        await self.api.enable_airkare()
+        await self._api.enable_airkare()
+        await self.coordinator.async_refresh()
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        await self.api.disable_airkare()
-
-    async def async_update(self) -> None:
-        """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_airkare_status()
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+        await self._api.disable_airkare()
+        await self.coordinator.async_refresh()
 
 
-class EdilkaminPowerSwitch(SwitchEntity):
+class EdilkaminPowerSwitch(CoordinatorEntity, SwitchEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, api: EdilkaminAsyncApi, coordinator) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self._api = api
+        self._mac_address = self.coordinator.get_mac_address()
+
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:power"
 
     @property
     def is_on(self):
         """Return True if the binary sensor is on."""
-        return self._state
+        return self.coordinator.get_power_status()
 
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_power_switch"
+        return f"{self._mac_address}_power_switch"
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
-        await self.api.enable_power()
+        await self._api.enable_power()
+        await self.coordinator.async_refresh()
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        await self.api.disable_power()
-
-    async def async_update(self) -> None:
-        """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_power_status()
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+        await self._api.disable_power()
+        await self.coordinator.async_refresh()
 
 
-class EdilkaminRelaxSwitch(SwitchEntity):
+class EdilkaminRelaxSwitch(CoordinatorEntity, SwitchEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, api: EdilkaminAsyncApi, coordinator) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self._api = api
+        self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:weather-night"
 
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+
     @property
     def is_on(self):
         """Return True if the binary sensor is on."""
-        return self._state
+        return self.coordinator.get_relax_status()
 
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_relax_switch"
+        return f"{self._mac_address}_relax_switch"
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
-        await self.api.enable_relax()
+        await self._api.enable_relax()
+        await self.coordinator.async_refresh()
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        await self.api.disable_relax()
-
-    async def async_update(self) -> None:
-        """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_relax_status()
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+        await self._api.disable_relax()
+        await self.coordinator.async_refresh()
 
 
-class EdilkaminChronoModeSwitch(SwitchEntity):
+class EdilkaminChronoModeSwitch(CoordinatorEntity, SwitchEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, api: EdilkaminAsyncApi):
+    def __init__(self, api: EdilkaminAsyncApi, coordinator) -> None:
         """Initialize the sensor."""
+        super().__init__(coordinator)
         self._state = None
-        self.api = api
-        self.mac_address = api.get_mac_address()
+        self._api = api
+        self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:calendar-clock"
+
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
     def is_on(self):
         """Return True if the binary sensor is on."""
-        return self._state
+        return self.coordinator.get_chrono_mode_status()
 
     @property
     def unique_id(self):
         """Return a unique_id for this entity."""
-        return f"{self.mac_address}_chrono_mode_switch"
+        return f"{self._mac_address}_chrono_mode_switch"
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
-        await self.api.enable_chrono_mode()
+        await self._api.enable_chrono_mode()
+        await self.coordinator.async_refresh()
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        await self.api.disable_chrono_mode()
-
-    async def async_update(self) -> None:
-        """Fetch new state data for the sensor."""
-        try:
-            self._state = await self.api.get_chrono_mode_status()
-        except HttpException as err:
-            _LOGGER.error(str(err))
-            return
+        await self._api.disable_chrono_mode()
+        await self.coordinator.async_refresh()

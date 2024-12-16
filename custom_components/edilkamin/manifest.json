@@ -5,7 +5,8 @@
   "integration_type": "hub",
   "documentation": "https://github.com/algra4/edilkamin",
   "requirements": [
-    "edilkamin==1.4.1"
+    "edilkamin==1.4.1",
+    "macaddress==2.0.2"
   ],
   "ssdp": [],
   "zeroconf": [],
@@ -15,5 +16,5 @@
     "@algra4"
   ],
   "iot_class": "cloud_polling",
-  "version": "1.0.0"
+  "version": "2.2.0"
 }
