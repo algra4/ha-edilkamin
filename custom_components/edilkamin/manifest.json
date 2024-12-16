@@ -2,7 +2,7 @@
   "domain": "edilkamin",
   "name": "Edilkamin",
   "config_flow": true,
-  "integration_type": "hub",
+  "integration_type": "device",
   "documentation": "https://github.com/algra4/edilkamin",
   "requirements": [
     "edilkamin==1.4.1",
@@ -16,5 +16,5 @@
     "@algra4"
   ],
   "iot_class": "cloud_polling",
-  "version": "2.2.0"
+  "version": "3.0.1"
 }
