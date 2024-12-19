@@ -77,10 +77,11 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
 
     def get_fan_speed(self, index: int = 1) -> str:
         """Get the fan speed."""
+
         return (
-            self._device_info.get("status")
-            .get("fans")
-            .get("fan_" + str(index) + "_speed")
+            self._device_info.get("nvm")
+            .get("user_parameters")
+            .get("fan_" + str(index) + "_ventilation")
         )
 
     def get_nb_fans(self):

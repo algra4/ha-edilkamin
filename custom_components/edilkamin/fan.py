@@ -16,7 +16,7 @@ from homeassistant.util.percentage import (
     percentage_to_ranged_value,
     ranged_value_to_percentage,
 )
-
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,10 +27,11 @@ SPEED_RANGE = (1, 5)  # away is not included in speeds and instead mapped to off
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
     async_api = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = hass.data[DOMAIN]["coordinator"]
 
     nb_fans = await async_api.get_nb_fans()
 
-    fans = [EdilkaminFan(async_api, 1)]
+    fans = [EdilkaminFan(async_api, 1, coordinator)]
 
     if nb_fans > 1:
         fans.extend(EdilkaminFan(async_api, i) for i in range(2, nb_fans + 1))
@@ -38,11 +39,12 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     async_add_devices(fans)
 
 
-class EdilkaminFan(FanEntity):
+class EdilkaminFan(CoordinatorEntity, FanEntity):
     """Representation of a Fan."""
 
-    def __init__(self, api: EdilkaminAsyncApi, index: int) -> None:
+    def __init__(self, api: EdilkaminAsyncApi, index: int, coordinator) -> None:
         """Initialize the fan."""
+        super().__init__(coordinator)
         self._api = api
         self._mac_address = api.get_mac_address()
         self._index = index
@@ -82,16 +84,16 @@ class EdilkaminFan(FanEntity):
         self._current_speed = math.ceil(
             percentage_to_ranged_value(SPEED_RANGE, percentage)
         )
-
         await self._api.set_fan_speed(self._current_speed, self._index)
         self.schedule_update_ha_state()
 
-    async def async_update(self) -> None:
+    def _handle_coordinator_update(self) -> None:
         """Fetch new state data for the sensor."""
         try:
-            self._current_state = await self._api.get_power_status()
+            self._current_state = self.coordinator.get_power_status()
             if self._current_state is True:
-                self._current_speed = await self._api.get_fan_speed(self._index)
+                self._current_speed = self.coordinator.get_fan_speed(self._index)
+                self.async_write_ha_state()
         except HttpException as err:
             _LOGGER.error(str(err))
             return
