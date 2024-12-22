@@ -17,6 +17,17 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+OPERATIOBAL_STATES = {
+    0: "Off",
+    1: "Ignition",
+    2: "On",
+    3: "Shutdown",
+    4: "Cooling",
+    5: "Alarm",
+    6: "Final cleaning",
+    7: "Unknown",
+}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -32,6 +43,7 @@ async def async_setup_entry(
         EdilkaminFanSensor(coordinator, 1),
         EdilkaminAlarmSensor(coordinator),
         EdilkaminActualPowerSensor(coordinator),
+        EdilkaminOperationalSensor(coordinator),
     ]
 
     nb_fans = coordinator.get_nb_fans()
@@ -210,4 +222,44 @@ class EdilkaminActualPowerSensor(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Fetch new state data for the sensor."""
         self._state = self.coordinator.get_actual_power()
+        self.async_write_ha_state()
+
+
+class EdilkaminOperationalSensor(CoordinatorEntity, SensorEntity):
+    """Representation of a Sensor."""
+
+    def __init__(self, coordinator) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._state = None
+        self._mac_address = self.coordinator.get_mac_address()
+        self._attr_icon = "mdi:eye"
+        self._attributes: dict[str, Any] = {}
+
+        self._attr_name = "Operational phase"
+        self._attr_options = list(OPERATIOBAL_STATES.values())
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+
+    @property
+    def device_class(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return SensorDeviceClass.ENUM
+
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return f"{self._mac_address}_operational_phase_sensor"
+
+    def _handle_coordinator_update(self) -> None:
+        """Fetch new state data for the sensor."""
+        op_state = self.coordinator.get_operational_phase()
+
+        if op_state in OPERATIOBAL_STATES:
+            self._attr_native_value = OPERATIOBAL_STATES[op_state]
+        else:
+            # Error operational code unknown, shows only the code
+            self._attr_native_value = OPERATIOBAL_STATES[7]
+
+        additional_att = {"value": op_state}
+        self._attr_extra_state_attributes = additional_att
         self.async_write_ha_state()

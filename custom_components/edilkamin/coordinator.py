@@ -131,3 +131,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
     def get_chrono_mode_status(self) -> str:
         """Get the status of the chrono mode."""
         return self._device_info.get("nvm").get("chrono").get("is_active")
+
+    def get_operational_phase(self) -> str:
+        """Get the operational phase."""
+        return self._device_info.get("status").get("state").get("operational_phase")
