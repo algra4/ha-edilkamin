@@ -135,3 +135,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
     def get_operational_phase(self) -> str:
         """Get the operational phase."""
         return self._device_info.get("status").get("state").get("operational_phase")
+
+    def get_autonomy_second(self) -> str:
+        """Get the operational phase."""
+        return self._device_info.get("status").get("pellet").get("autonomy_time")
