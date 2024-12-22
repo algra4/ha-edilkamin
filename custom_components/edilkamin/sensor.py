@@ -17,7 +17,7 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-OPERATIOBAL_STATES = {
+OPERATIONAL_STATES = {
     0: "Off",
     1: "Ignition",
     2: "On",
@@ -237,7 +237,7 @@ class EdilkaminOperationalSensor(CoordinatorEntity, SensorEntity):
         self._attributes: dict[str, Any] = {}
 
         self._attr_name = "Operational phase"
-        self._attr_options = list(OPERATIOBAL_STATES.values())
+        self._attr_options = list(OPERATIONAL_STATES.values())
         self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
 
     @property
@@ -254,11 +254,11 @@ class EdilkaminOperationalSensor(CoordinatorEntity, SensorEntity):
         """Fetch new state data for the sensor."""
         op_state = self.coordinator.get_operational_phase()
 
-        if op_state in OPERATIOBAL_STATES:
-            self._attr_native_value = OPERATIOBAL_STATES[op_state]
+        if op_state in OPERATIONAL_STATES:
+            self._attr_native_value = OPERATIONAL_STATES[op_state]
         else:
             # Error operational code unknown, shows only the code
-            self._attr_native_value = OPERATIOBAL_STATES[7]
+            self._attr_native_value = OPERATIONAL_STATES[7]
 
         additional_att = {"value": op_state}
         self._attr_extra_state_attributes = additional_att
