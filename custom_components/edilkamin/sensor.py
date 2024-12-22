@@ -12,7 +12,6 @@ from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,6 +43,7 @@ async def async_setup_entry(
         EdilkaminAlarmSensor(coordinator),
         EdilkaminActualPowerSensor(coordinator),
         EdilkaminOperationalSensor(coordinator),
+        EdilkaminAutonomySensor(coordinator),
     ]
 
     nb_fans = coordinator.get_nb_fans()
@@ -262,4 +262,51 @@ class EdilkaminOperationalSensor(CoordinatorEntity, SensorEntity):
 
         additional_att = {"value": op_state}
         self._attr_extra_state_attributes = additional_att
+        self.async_write_ha_state()
+
+
+class EdilkaminAutonomySensor(CoordinatorEntity, SensorEntity):
+    """Representation of a Sensor."""
+
+    def __init__(self, coordinator) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._state = None
+        self._mac_address = self.coordinator.get_mac_address()
+
+        self._attr_name = "Autonomy"
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:timer"
+
+        additional_att = {
+            "description": "Time remaining before the stove turns off if no pellets are added"
+        }
+        self._attr_extra_state_attributes = additional_att
+
+    @property
+    def device_class(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return SensorDeviceClass.DURATION
+
+    @property
+    def native_unit_of_measurement(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return "min"
+
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return f"{self._mac_address}_autonomy"
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._state
+
+    def _handle_coordinator_update(self) -> None:
+        """Fetch new state data for the sensor."""
+        autonomy_second = self.coordinator.get_autonomy_second()
+        # Convert seconds to minutes
+        minutes, sec = divmod(autonomy_second, 60)
+        self._state = f"{minutes}:{sec}"
         self.async_write_ha_state()
