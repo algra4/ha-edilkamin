@@ -34,7 +34,9 @@ class EdilkaminAsyncApi:
 
     async def get_temperature(self):
         """Get the temperature."""
-        return (await self.get_info()).get("status").get("temperatures").get("enviroment")
+        return (
+            (await self.get_info()).get("status").get("temperatures").get("enviroment")
+        )
 
     async def set_temperature(self, value):
         """Modify the temperature."""
@@ -167,6 +169,24 @@ class EdilkaminAsyncApi:
             edilkamin.device_info, token, self._mac_address
         )
 
+    async def enable_standby_mode(self):
+        """Set the standby mode."""
+        if not await self.is_auto():
+            raise NotInRightState("Standby mode is only available from auto mode.")
+
+        await self.execute_command({"name": "standby_mode", "value": True})
+
+    async def disable_standby_mode(self):
+        """Set the standby mode."""
+        if not await self.is_auto():
+            raise NotInRightState("Standby mode is only available from auto mode.")
+
+        await self.execute_command({"name": "standby_mode", "value": False})
+
+    async def is_auto(self):
+        """Check if the device is in auto mode."""
+        return (await self.get_info()).get("nvm").get("user_parameters").get("is_auto")
+
     async def execute_command(self, payload: dict) -> str:
         """Execute the command."""
         token = await self.get_token()
@@ -184,3 +204,11 @@ class HttpException(Exception):
         super().__init__(message)
         self.status_code = status_code
         self.text = text
+
+
+class EdilkaminApi(Exception):
+    """Base class for exceptions in this module."""
+
+
+class NotInRightState(EdilkaminApi):
+    """Exception raised when the device is not in the right state."""

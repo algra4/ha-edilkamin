@@ -58,7 +58,8 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             async with async_timeout.timeout(10):
                 self._device_info = await self.update_device_information()
                 _LOGGER.debug("Data updated successfully")
-                _LOGGER.debug(self._device_info)
+                _LOGGER.error("-----------------------------------")
+                _LOGGER.error(self._device_info)
                 return self._device_info
         except Exception:
             raise UpdateFailed("Error communicating with API")
@@ -139,3 +140,17 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
     def get_autonomy_second(self) -> str:
         """Get the operational phase."""
         return self._device_info.get("status").get("pellet").get("autonomy_time")
+
+    def get_standby_mode(self) -> bool:
+        """Get standby mode."""
+        return (
+            self._device_info.get("nvm").get("user_parameters").get("is_standby_active")
+        )
+
+    def get_standby_waiting_time(self) -> str:
+        """Get standby waiting time."""
+        return (
+            self._device_info.get("nvm")
+            .get("user_parameters")
+            .get("standby_waiting_time")
+        )
