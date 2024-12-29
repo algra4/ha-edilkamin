@@ -11,6 +11,7 @@ from custom_components.edilkamin.api.edilkamin_async_api import (
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -183,6 +184,7 @@ class EdilkaminStandByModeSwitch(CoordinatorEntity, SwitchEntity):
             _LOGGER.warning(e)
             self._attr_is_on = False
             await self.coordinator.async_refresh()
+            raise HomeAssistantError(e) from e
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
