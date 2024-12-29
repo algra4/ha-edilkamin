@@ -187,6 +187,18 @@ class EdilkaminAsyncApi:
         """Check if the device is in auto mode."""
         return (await self.get_info()).get("nvm").get("user_parameters").get("is_auto")
 
+    async def enable_auto_mode(self):
+        """Set the auto mode."""
+        await self.execute_command({"name": "auto_mode", "value": True})
+
+    async def disable_auto_mode(self):
+        """Set the auto mode."""
+        await self.execute_command({"name": "auto_mode", "value": False})
+
+    async def set_manual_power_level(self, value: int):
+        """Set the manual power level."""
+        await self.execute_command({"name": "power_level", "value": value})
+
     async def execute_command(self, payload: dict) -> str:
         """Execute the command."""
         token = await self.get_token()
