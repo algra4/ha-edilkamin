@@ -154,6 +154,10 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             .get("standby_waiting_time")
         )
 
+    def get_power_ons(self) -> str:
+        """Get the number of power ons."""
+        return self._device_info.get("nvm").get("total_counters").get("power_ons")
+
     def is_auto(self):
         """Check if the device is in auto mode."""
         return self._device_info.get("nvm").get("user_parameters").get("is_auto")
