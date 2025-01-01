@@ -42,7 +42,7 @@ class EdilkaminAirekareSwitch(CoordinatorEntity, SwitchEntity):
         super().__init__(coordinator)
         self._state = None
         self._api = api
-        self._mac_address = api.get_mac_address()
+        self._mac_address = self.coordinator.get_mac_address()
         self._attr_icon = "mdi:air-filter"
         self._attr_name = "Airekare"
 

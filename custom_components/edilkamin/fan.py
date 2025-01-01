@@ -29,7 +29,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     async_api = hass.data[DOMAIN][config_entry.entry_id]
     coordinator = hass.data[DOMAIN]["coordinator"]
 
-    nb_fans = await async_api.get_nb_fans()
+    nb_fans = coordinator.get_nb_fans()
 
     fans = [EdilkaminFan(async_api, 1, coordinator)]
 
@@ -46,7 +46,7 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         """Initialize the fan."""
         super().__init__(coordinator)
         self._api = api
-        self._mac_address = api.get_mac_address()
+        self._mac_address = self.coordinator.get_mac_address()
         self._index = index
         self._current_speed = None
         self._current_state = False

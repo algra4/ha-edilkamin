@@ -71,7 +71,7 @@ class EdilkaminClimateEntity(CoordinatorEntity, ClimateEntity):
         self._attr_hvac_modes = CLIMATE_HVAC_MODE_MANAGED
         self._attr_hvac_mode = HVACMode.OFF  # default hvac mode
 
-        self._mac_address = api.get_mac_address()
+        self._mac_address = self.coordinator.get_mac_address()
         self._attr_max_temp = 24
         self._attr_min_temp = 14
 
