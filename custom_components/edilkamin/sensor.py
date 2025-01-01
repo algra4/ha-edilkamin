@@ -313,7 +313,7 @@ class EdilkaminAutonomySensor(CoordinatorEntity, SensorEntity):
         autonomy_second = self.coordinator.get_autonomy_second()
         # Convert seconds to minutes
         minutes, sec = divmod(autonomy_second, 60)
-        self._state = f"{minutes}:{sec}"
+        self._state = f"{minutes}"
         self.async_write_ha_state()
 
 
