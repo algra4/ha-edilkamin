@@ -1,0 +1,22 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Gerät ist bereits konfiguriert"
+    },
+    "error": {
+      "cannot_connect": "Verbindung konnte nicht hergestelt werden",
+      "invalid_auth": "Anmeldeinformationen ungültig",
+      "mac_address": "Ungültige MAC-Adresse",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "mac_address": "MAC-Adresse",
+          "username": "Benutzername",
+          "password": "Passwort"
+        }
+      }
+    }
+  }
+}
