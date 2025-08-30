@@ -154,6 +154,10 @@ mode: single
 - Myrna 
   - motherboard : `1.58.201215a` - `1.0.200824a`
   - wifi_ble_module : `1.0_20` - `1.0.200824a`
+ 
+- Blade H
+  - platine firmware : `4.1.240802a`
+  - core control pan : `4.1.241010a`
 
 ## External dependencies
 
