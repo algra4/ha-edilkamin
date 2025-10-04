@@ -1,3 +1,6 @@
 pytest
-pytest-cov==2.9.0
+pytest-cov
 pytest-homeassistant-custom-component
+pytest-asyncio
+edilkamin==1.4.1
+macaddress==2.0.2

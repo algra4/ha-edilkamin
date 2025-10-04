@@ -71,97 +71,153 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
         """Return the MAC address."""
         return self._mac_address
 
-    def get_temperature(self) -> str:
-        """Get the temperature."""
-        return self._device_info.get("status").get("temperatures").get("enviroment")
+    def get_temperature(self) -> float | None:
+        """Get the environment temperature."""
+        return (
+            self._device_info.get("status", {})
+            .get("temperatures", {})
+            .get("enviroment")
+        )
 
     def get_fan_speed(self, index: int = 1) -> str:
         """Get the fan speed."""
-
         return (
-            self._device_info.get("nvm")
-            .get("user_parameters")
-            .get("fan_" + str(index) + "_ventilation")
+            self._device_info.get("nvm", {})
+            .get("user_parameters", {})
+            .get(f"fan_{index}_ventilation")
         )
 
-    def get_nb_fans(self):
+    def get_nb_fans(self) -> int | None:
         """Get the number of fans."""
         return (
-            self._device_info.get("nvm").get("installer_parameters").get("fans_number")
+            self._device_info.get("nvm", {})
+            .get("installer_parameters", {})
+            .get("fans_number", None)
         )
 
-    def get_nb_alarms(self) -> str:
+    def get_nb_alarms(self) -> str | None:
         """Get the number of alarms."""
-        return self._device_info.get("nvm").get("alarms_log").get("index")
+        return (
+            self._device_info.get("nvm", {})
+            .get("alarms_log", {})
+            .get("index", None)
+        )
 
     def get_alarms(self) -> list:
         """Get the alarms."""
-        alarms_info = self._device_info.get("nvm").get("alarms_log")
-        index = alarms_info.get("index")
-        return [alarms_info.get("alarms")[i] for i in range(index)]
+        alarms_info = self._device_info.get("nvm", {}).get("alarms_log", {})
+        index = alarms_info.get("index", 0)
+        alarms = alarms_info.get("alarms", [])
+        return [alarms[i] for i in range(min(index, len(alarms)))]
 
-    def get_actual_power(self) -> str:
+    def get_actual_power(self) -> str | None:
         """Get the actual power."""
-        return self._device_info.get("status").get("state").get("actual_power")
+        return (
+            self._device_info.get("status", {})
+            .get("state", {})
+            .get("actual_power")
+        )
 
-    def get_status_tank(self) -> str:
+    def get_status_tank(self) -> str | None:
         """Get the status of the tank."""
-        return self._device_info.get("status").get("flags").get("is_pellet_in_reserve")
+        return (
+            self._device_info.get("status", {})
+            .get("flags", {})
+            .get("is_pellet_in_reserve")
+        )
 
     def get_airkare_status(self) -> str:
         """Get the status of the airkare."""
-        return self._device_info.get("status").get("flags").get("is_airkare_active")
+        return (
+            self._device_info.get("status", {})
+            .get("flags", {})
+            .get("is_airkare_active")
+        )
 
     def get_power_status(self) -> str:
         """Get the status of the power."""
-        return self._device_info.get("status").get("commands").get("power")
+        return (
+            self._device_info.get("status", {})
+            .get("commands", {})
+            .get("power")
+        )
 
     def get_relax_status(self) -> str:
         """Get the status of the relax."""
-        return self._device_info.get("status").get("flags").get("is_relax_active")
+        return (
+            self._device_info.get("status", {})
+            .get("flags", {})
+            .get("is_relax_active")
+        )
 
     def get_target_temperature(self) -> str:
         """Get the target temperature."""
         return (
-            self._device_info.get("nvm")
-            .get("user_parameters")
+            self._device_info.get("nvm", {})
+            .get("user_parameters", {})
             .get("enviroment_1_temperature")
         )
 
     def get_chrono_mode_status(self) -> str:
         """Get the status of the chrono mode."""
-        return self._device_info.get("nvm").get("chrono").get("is_active")
+        return (
+            self._device_info.get("nvm", {})
+            .get("chrono", {})
+            .get("is_active")
+        )
 
     def get_operational_phase(self) -> str:
         """Get the operational phase."""
-        return self._device_info.get("status").get("state").get("operational_phase")
+        return (
+            self._device_info.get("status", {})
+            .get("state", {})
+            .get("operational_phase")
+        )
 
-    def get_autonomy_second(self) -> str:
-        """Get the operational phase."""
-        return self._device_info.get("status").get("pellet").get("autonomy_time")
+    def get_autonomy_second(self) -> str | None:
+        """Get the autonomy time."""
+        return (
+            self._device_info.get("status", {})
+            .get("pellet", {})
+            .get("autonomy_time", None)
+        )
 
     def get_standby_mode(self) -> bool:
         """Get standby mode."""
         return (
-            self._device_info.get("nvm").get("user_parameters").get("is_standby_active")
+            self._device_info.get("nvm", {})
+            .get("user_parameters", {})
+            .get("is_standby_active", False)
         )
 
-    def get_standby_waiting_time(self) -> str:
+    def get_standby_waiting_time(self) -> str | None:
         """Get standby waiting time."""
         return (
-            self._device_info.get("nvm")
-            .get("user_parameters")
-            .get("standby_waiting_time")
+            self._device_info.get("nvm", {})
+            .get("user_parameters", {})
+            .get("standby_waiting_time", None)
         )
 
-    def get_power_ons(self) -> str:
+    def get_power_ons(self) -> str | None:
         """Get the number of power ons."""
-        return self._device_info.get("nvm").get("total_counters").get("power_ons")
+        return (
+            self._device_info.get("nvm", {})
+            .get("total_counters", {})
+            .get("power_ons", None)
+        )
 
-    def is_auto(self):
+    def is_auto(self) -> bool:
         """Check if the device is in auto mode."""
-        return self._device_info.get("nvm").get("user_parameters").get("is_auto")
+        return (
+            self._device_info.get("nvm", {})
+            .get("user_parameters", {})
+            .get("is_auto", False)
+        )
 
     def get_manual_power(self):
         """Get the manual mode."""
-        return self._device_info.get("nvm").get("user_parameters").get("manual_power")
+        return (
+            self._device_info.get("nvm", {})
+            .get("user_parameters", {})
+            .get("manual_power")
+        )
