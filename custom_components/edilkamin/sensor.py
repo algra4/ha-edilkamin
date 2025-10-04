@@ -323,7 +323,7 @@ class EdilkaminPowerOnsSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
-        self._state = self.coordinator.get_power_ons()
+        self._state = None
         self._mac_address = self.coordinator.get_mac_address()
 
         self._attr_name = "Power ons"
