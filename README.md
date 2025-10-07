@@ -172,5 +172,8 @@ mode: single
 - For local development and CI, dependencies are managed with `pyproject.toml` and `uv`.
   - Install dev dependencies: `uv sync --group test`
   - Run tests: `uv run pytest -v`
+- Linting/formatting uses Ruff (replacing flake8 and isort). Basic commands:
+  - Lint: `uv run ruff check .`
+  - Format (optional): `uv run ruff format .`
 
 
