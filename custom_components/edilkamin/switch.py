@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import logging
 
-from custom_components.edilkamin.api.edilkamin_async_api import (
-    EdilkaminAsyncApi,
-    NotInRightState,
-)
-
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
+from custom_components.edilkamin.api.edilkamin_async_api import (
+    EdilkaminAsyncApi,
+    NotInRightState,
+)
 
 from .const import DOMAIN
 

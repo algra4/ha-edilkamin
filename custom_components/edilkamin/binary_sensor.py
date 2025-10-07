@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import logging
 
-from custom_components.edilkamin.api.edilkamin_async_api import (
-    EdilkaminAsyncApi,
-)
-
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
+from custom_components.edilkamin.api.edilkamin_async_api import (
+    EdilkaminAsyncApi,
+)
 
 from .const import DOMAIN
 
@@ -101,8 +101,6 @@ class EdilkaminCheckBinarySensor(BinarySensorEntity):
             self._state = False
             self.async_write_ha_state()
         except Exception as err:
-            _LOGGER.error("Exception type: %s", err)
-            _LOGGER.error("Exception message: %s", err)
             self._state = True
-            _LOGGER.error(str(err))
             self.async_write_ha_state()
+            _LOGGER.exception("Exception message: %s", err)

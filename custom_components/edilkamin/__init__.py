@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import logging
 
-from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+
+from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
 
 from .const import DOMAIN, MAC_ADDRESS, PASSWORD, USERNAME
 from .coordinator import EdilkaminCoordinator
