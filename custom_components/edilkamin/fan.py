@@ -5,18 +5,19 @@ from __future__ import annotations
 import logging
 import math
 
-from custom_components.edilkamin.api.edilkamin_async_api import (
-    EdilkaminAsyncApi,
-    HttpException,
-)
-
 from homeassistant.components.fan import FanEntity, FanEntityFeature
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util.percentage import (
     int_states_in_range,
     percentage_to_ranged_value,
     ranged_value_to_percentage,
 )
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
+from custom_components.edilkamin.api.edilkamin_async_api import (
+    EdilkaminAsyncApi,
+    HttpException,
+)
+
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -95,13 +96,13 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
                 self._current_speed = self.coordinator.get_fan_speed(self._index)
                 self.async_write_ha_state()
         except HttpException as err:
-            _LOGGER.error(str(err))
+            _LOGGER.exception("Error fetching fan state: %s", str(err))
             return
 
     async def async_turn_on(
         self,
-        percentage: int = None,
-        preset_mode: str = None,
+        percentage: int | None = None,
+        preset_mode: str | None = None,
         **kwargs,
     ) -> None:
         """Turn on the entity."""

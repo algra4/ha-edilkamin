@@ -4,19 +4,22 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import DOMAIN
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -312,7 +315,7 @@ class EdilkaminAutonomySensor(CoordinatorEntity, SensorEntity):
         """Fetch new state data for the sensor."""
         autonomy_second = self.coordinator.get_autonomy_second()
         # Convert seconds to minutes
-        minutes, sec = divmod(autonomy_second, 60)
+        minutes = divmod(autonomy_second, 60)
         self._state = f"{minutes}"
         self.async_write_ha_state()
 

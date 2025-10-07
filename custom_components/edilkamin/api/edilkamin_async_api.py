@@ -1,7 +1,6 @@
 import logging
 
 import edilkamin
-
 from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
@@ -93,14 +92,14 @@ class EdilkaminAsyncApi:
     async def enable_standby_mode(self):
         """Set the standby mode."""
         if not await self.is_auto():
-            raise NotInRightState("Standby mode is only available from auto mode.")
+            raise NotInRightState
 
         await self.execute_command({"name": "standby_mode", "value": True})
 
     async def disable_standby_mode(self):
         """Set the standby mode."""
         if not await self.is_auto():
-            raise NotInRightState("Standby mode is only available from auto mode.")
+            raise NotInRightState
 
         await self.execute_command({"name": "standby_mode", "value": False})
 
@@ -145,3 +144,6 @@ class EdilkaminApi(Exception):
 
 class NotInRightState(EdilkaminApi):
     """Exception raised when the device is not in the right state."""
+
+    def __init__(self):
+        super().__init__("Standby mode is only available from auto mode.")
