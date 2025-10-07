@@ -6,7 +6,7 @@ This guide explains how to set up the testing environment and run tests for the 
 
 ### Installing uv
 
-[uv](https://github.com/astral-sh/uv) is a fast Python package installer and resolver. Install it using one of the following methods:
+[uv](https://github.com/astral-sh/uv) is a fast Python package manager and resolver. Install it using one of the following methods:
 
 **Linux/macOS:**
 ```bash
@@ -15,12 +15,12 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ## Installation
 
-### Option 1: Using uv (Recommended)
+### Using uv (Recommended)
 
-Install all test dependencies using uv:
+Install all dependencies declared in pyproject.toml, the dev dependency-group is installed by default:
 
 ```bash
-uv pip install -r requirements.test.txt
+uv sync
 ```
 
 ## Running Tests
@@ -28,7 +28,7 @@ uv pip install -r requirements.test.txt
 ### Run all tests
 
 ```bash
-un run pytest
+uv run pytest
 ```
 
 ### Run tests with verbose output
@@ -42,3 +42,5 @@ uv run pytest -v
 ```bash
 uv run pytest tests/test_coordinator_safety.py
 ```
+
+Note: The repository no longer uses requirements*.txt files. Runtime dependencies are installed by Home Assistant from custom_components/edilkamin/manifest.json. Development and test dependencies are defined in pyproject.toml and managed via uv.

@@ -93,7 +93,7 @@ Click on this button:
 3. In the home assistant configuration screen click on Integrations.
 4. Click on the + icon to add a new integration.
 5. Search for `Edilakmin` and select it.
-6. Enter the mac address, username and password.
+6. Enter the mac address and your edilkamin username and password.
 
 <details>
   <summary>Manual Installation</summary>
@@ -165,5 +165,12 @@ mode: single
 
 ## Thanks
 - thanks to [@nghaye](https://github.com/nghaye/ha-edilkamin) for some inspiration to improve integration
+
+## Development notes
+
+- Home Assistant installs this integration's runtime dependencies from `custom_components/edilkamin/manifest.json` when the integration is loaded.
+- For local development and CI, dependencies are managed with `pyproject.toml` and `uv`.
+  - Install dev dependencies: `uv sync --group test`
+  - Run tests: `uv run pytest -v`
 
 
