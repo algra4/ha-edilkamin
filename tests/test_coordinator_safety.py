@@ -1,7 +1,9 @@
 """Tests for coordinator data safety checks."""
 
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock
+
 from custom_components.edilkamin.coordinator import EdilkaminCoordinator
 
 
@@ -151,9 +153,7 @@ class TestCoordinatorWithValidData:
 
     def test_get_temperature_with_valid_data(self, coordinator):
         """Test get_temperature with valid data."""
-        coordinator._device_info = {
-            "status": {"temperatures": {"enviroment": 22.5}}
-        }
+        coordinator._device_info = {"status": {"temperatures": {"enviroment": 22.5}}}
         assert coordinator.get_temperature() == 22.5
 
     def test_get_fan_speed_with_valid_data(self, coordinator):
@@ -165,9 +165,7 @@ class TestCoordinatorWithValidData:
 
     def test_get_nb_fans_with_valid_data(self, coordinator):
         """Test get_nb_fans with valid data."""
-        coordinator._device_info = {
-            "nvm": {"installer_parameters": {"fans_number": 2}}
-        }
+        coordinator._device_info = {"nvm": {"installer_parameters": {"fans_number": 2}}}
         assert coordinator.get_nb_fans() == 2
 
     def test_get_alarms_with_valid_data(self, coordinator):

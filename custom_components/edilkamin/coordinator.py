@@ -2,10 +2,10 @@ from datetime import timedelta
 import logging
 
 import async_timeout
-from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
-
 import edilkamin
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,7 +61,8 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug(self._device_info)
                 return self._device_info
         except Exception:
-            raise UpdateFailed("Error communicating with API")
+            msg = "Error communicating with API"
+            raise UpdateFailed(msg)
 
     def get_token(self) -> str:
         """Return the current token."""
@@ -97,11 +98,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
 
     def get_nb_alarms(self) -> str | None:
         """Get the number of alarms."""
-        return (
-            self._device_info.get("nvm", {})
-            .get("alarms_log", {})
-            .get("index", None)
-        )
+        return self._device_info.get("nvm", {}).get("alarms_log", {}).get("index", None)
 
     def get_alarms(self) -> list:
         """Get the alarms."""
@@ -112,11 +109,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
 
     def get_actual_power(self) -> str | None:
         """Get the actual power."""
-        return (
-            self._device_info.get("status", {})
-            .get("state", {})
-            .get("actual_power")
-        )
+        return self._device_info.get("status", {}).get("state", {}).get("actual_power")
 
     def get_status_tank(self) -> str | None:
         """Get the status of the tank."""
@@ -136,18 +129,12 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
 
     def get_power_status(self) -> str:
         """Get the status of the power."""
-        return (
-            self._device_info.get("status", {})
-            .get("commands", {})
-            .get("power")
-        )
+        return self._device_info.get("status", {}).get("commands", {}).get("power")
 
     def get_relax_status(self) -> str:
         """Get the status of the relax."""
         return (
-            self._device_info.get("status", {})
-            .get("flags", {})
-            .get("is_relax_active")
+            self._device_info.get("status", {}).get("flags", {}).get("is_relax_active")
         )
 
     def get_target_temperature(self) -> str:
@@ -160,11 +147,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
 
     def get_chrono_mode_status(self) -> str:
         """Get the status of the chrono mode."""
-        return (
-            self._device_info.get("nvm", {})
-            .get("chrono", {})
-            .get("is_active")
-        )
+        return self._device_info.get("nvm", {}).get("chrono", {}).get("is_active")
 
     def get_operational_phase(self) -> str:
         """Get the operational phase."""
