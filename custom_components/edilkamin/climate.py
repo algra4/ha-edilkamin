@@ -6,8 +6,7 @@ Inspired by nghaye/ha-edilkamin.
 from __future__ import annotations
 
 import logging
-
-from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
+from typing import TYPE_CHECKING
 
 from homeassistant.components.climate import (
     ClimateEntity,
@@ -15,10 +14,14 @@ from homeassistant.components.climate import (
     HVACMode,
 )
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
+    from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -136,7 +139,8 @@ class EdilkaminClimateEntity(CoordinatorEntity, ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
         if hvac_mode not in CLIMATE_HVAC_MODE_MANAGED:
-            raise ValueError(f"Unsupported HVAC mode: {hvac_mode}")
+            msg = f"Unsupported HVAC mode: {hvac_mode}"
+            raise ValueError(msg)
 
         if hvac_mode == HVACMode.OFF:
             await self.api.disable_power()
