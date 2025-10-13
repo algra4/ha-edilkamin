@@ -13,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.13.2"]
+        homeassistant-version: ["2025.5.0", "2025.9.0"]
 
     steps:
     - uses: actions/checkout@v5
@@ -31,6 +32,10 @@ jobs:
     - name: Install dependencies with uv (using pyproject)
       run: |
         uv sync --all-extras --dev
+
+    - name: Install Home Assistant ${{ matrix.homeassistant-version }}
+      run: |
+        uv pip install "homeassistant==${{ matrix.homeassistant-version }}"
 
     - name: Run tests with pytest (via uv)
       run: |
