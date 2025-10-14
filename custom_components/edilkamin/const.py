@@ -4,4 +4,4 @@ DOMAIN = "edilkamin"
 
 MAC_ADDRESS = "mac_address"
 USERNAME = "username"
-PASSWORD = "password"
+PASSWORD = "password"  # noqa: S105
