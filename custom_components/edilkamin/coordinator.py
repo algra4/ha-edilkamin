@@ -60,9 +60,9 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug("Data updated successfully")
                 _LOGGER.debug(self._device_info)
                 return self._device_info
-        except Exception:
+        except Exception as e:
             msg = "Error communicating with API"
-            raise UpdateFailed(msg)
+            raise UpdateFailed(msg) from e
 
     def get_token(self) -> str:
         """Return the current token."""
