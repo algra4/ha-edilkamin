@@ -27,9 +27,10 @@ class EdilkaminAsyncApi:
             await self._hass.async_add_executor_job(
                 edilkamin.sign_in, self._username, self._password
             )
-            return True
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
+        else:
+            return True
 
     async def set_temperature(self, value):
         """Modify the temperature."""

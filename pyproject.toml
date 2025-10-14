@@ -53,8 +53,6 @@ ignore = [
     "PLR2004",
     "SLF001",
     "D",
-    "BLE001",
-    "TRY300",
     "COM812",  # Avoid conflict with formatter
 ]
 
