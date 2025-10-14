@@ -287,7 +287,8 @@ class EdilkaminAutonomySensor(CoordinatorEntity, SensorEntity):
         self._attr_icon = "mdi:timer"
 
         additional_att = {
-            "description": "Time remaining before the stove turns off if no pellets are added"
+            "description": "Time remaining before the stove turns off"
+            " if no pellets are added"
         }
         self._attr_extra_state_attributes = additional_att
 

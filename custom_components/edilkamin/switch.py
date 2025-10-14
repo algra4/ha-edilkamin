@@ -163,7 +163,12 @@ class EdilkaminStandByModeSwitch(CoordinatorEntity, SwitchEntity):
         standby_waiting_time = f"{standby_minutes}:{stand_by_sec} min"
 
         additional_att = {
-            "description": "When the Stand-by function is active, in the automatic and crono modes, the product switches off once the temperature set-point is reached and turns on again when the room temperature drops below the chosen value.",
+            "description": "When the Stand-by function is active, "
+            "in the automatic and crono modes, "
+            "the product switches off "
+            "once the temperature set-point is reached"
+            " and turns on again "
+            "when the room temperature drops below the chosen value.",
             "details": standby_waiting_time,
         }
         self._attr_extra_state_attributes = additional_att
