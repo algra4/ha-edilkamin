@@ -66,7 +66,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except Exception as exception:
                 exception_type = type(exception).__name__
-                _LOGGER.exception("Exception message: %s, type=%s", exception, exception_type)
+                _LOGGER.exception(
+                    "Exception message: %s, type=%s", exception, exception_type
+                )
                 if exception.__class__.__name__ == "NotAuthorizedException":
                     errors["base"] = "invalid_auth"
                 else:
@@ -77,5 +79,5 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
 
-class InvalidMacAddress(HomeAssistantError):
+class InvalidMacAddressError(HomeAssistantError):
     """Error to indicate there is invalid mac address."""

@@ -57,7 +57,6 @@ ignore = [
     "PLR2004",
     "SLF001",
     "D",
-    "N818", # Custom exceptions should be named with an Error suffix
     "S105",
     "S106",
     "ARG001",

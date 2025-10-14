@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from custom_components.edilkamin.api.edilkamin_async_api import (
     EdilkaminAsyncApi,
-    NotInRightState,
+    NotInRightStateError,
 )
 
 from .const import DOMAIN
@@ -183,7 +183,7 @@ class EdilkaminStandByModeSwitch(CoordinatorEntity, SwitchEntity):
         try:
             await self._api.enable_standby_mode()
             await self.coordinator.async_refresh()
-        except NotInRightState as e:
+        except NotInRightStateError as e:
             _LOGGER.warning(e)
             self._attr_is_on = False
             await self.coordinator.async_refresh()
@@ -194,7 +194,7 @@ class EdilkaminStandByModeSwitch(CoordinatorEntity, SwitchEntity):
         try:
             await self._api.disable_standby_mode()
             await self.coordinator.async_refresh()
-        except NotInRightState as e:
+        except NotInRightStateError as e:
             _LOGGER.warning(e)
             self._attr_is_on = True
             await self.coordinator.async_refresh()
