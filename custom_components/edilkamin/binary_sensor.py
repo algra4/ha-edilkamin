@@ -102,7 +102,7 @@ class EdilkaminCheckBinarySensor(BinarySensorEntity):
             await self._api.check()
             self._state = False
             self.async_write_ha_state()
-        except Exception as err:
+        except Exception:
             self._state = True
             self.async_write_ha_state()
-            _LOGGER.exception("Exception message: %s", err)
+            _LOGGER.exception("Exception message: %s")
