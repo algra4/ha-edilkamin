@@ -66,7 +66,6 @@ ignore = [
     "B904",
     "BLE001",
     "TRY300",
-    "INP001",
     "COM812",  # Avoid conflict with formatter
 ]
 
