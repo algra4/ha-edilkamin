@@ -37,7 +37,7 @@ OPERATIONAL_STATES = {
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    _config_entry: ConfigEntry,
     async_add_devices: AddEntitiesCallback,
 ):
     """Add sensors for passed config_entry in HA."""
