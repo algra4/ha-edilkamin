@@ -38,8 +38,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             try:
                 macaddress.MAC(mac_address)
-            except ValueError as error:
-                _LOGGER.exception("Invalid mac address: %s", error)
+            except ValueError:
+                _LOGGER.exception("Invalid mac address: %s", mac_address)
                 errors["base"] = "mac_address"
                 return self.async_show_form(
                     step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
@@ -65,8 +65,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 errors["base"] = "invalid_auth"
             except Exception as exception:
-                exception_type = type(exception).__name__
-                _LOGGER.exception("Exception message: %s, type=%s", exception, exception_type)
+                _LOGGER.exception("Exception message: %s, type=%s")
                 if exception.__class__.__name__ == "NotAuthorizedException":
                     errors["base"] = "invalid_auth"
                 else:
@@ -77,5 +76,5 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
 
-class InvalidMacAddress(HomeAssistantError):
+class InvalidMacAddressError(HomeAssistantError):
     """Error to indicate there is invalid mac address."""

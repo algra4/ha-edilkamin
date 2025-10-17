@@ -37,7 +37,7 @@ OPERATIONAL_STATES = {
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    _config_entry: ConfigEntry,
     async_add_devices: AddEntitiesCallback,
 ):
     """Add sensors for passed config_entry in HA."""
@@ -287,7 +287,8 @@ class EdilkaminAutonomySensor(CoordinatorEntity, SensorEntity):
         self._attr_icon = "mdi:timer"
 
         additional_att = {
-            "description": "Time remaining before the stove turns off if no pellets are added"
+            "description": "Time remaining before the stove turns off"
+            " if no pellets are added"
         }
         self._attr_extra_state_attributes = additional_att
 

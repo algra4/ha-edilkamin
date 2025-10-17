@@ -21,7 +21,7 @@ def coordinator(mock_hass):
     return EdilkaminCoordinator(
         hass=mock_hass,
         username="test@example.com",
-        password="password",
+        password="password",  # noqa: S106
         mac_address="00:11:22:33:44:55",
     )
 

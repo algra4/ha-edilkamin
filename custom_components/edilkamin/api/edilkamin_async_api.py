@@ -27,9 +27,10 @@ class EdilkaminAsyncApi:
             await self._hass.async_add_executor_job(
                 edilkamin.sign_in, self._username, self._password
             )
-            return True
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
+        else:
+            return True
 
     async def set_temperature(self, value):
         """Modify the temperature."""
@@ -92,14 +93,14 @@ class EdilkaminAsyncApi:
     async def enable_standby_mode(self):
         """Set the standby mode."""
         if not await self.is_auto():
-            raise NotInRightState
+            raise NotInRightStateError
 
         await self.execute_command({"name": "standby_mode", "value": True})
 
     async def disable_standby_mode(self):
         """Set the standby mode."""
         if not await self.is_auto():
-            raise NotInRightState
+            raise NotInRightStateError
 
         await self.execute_command({"name": "standby_mode", "value": False})
 
@@ -128,7 +129,7 @@ class EdilkaminAsyncApi:
         )
 
 
-class HttpException(Exception):
+class HttpError(Exception):
     """HTTP exception class with message text, and status code."""
 
     def __init__(self, message, text, status_code) -> None:
@@ -138,11 +139,11 @@ class HttpException(Exception):
         self.text = text
 
 
-class EdilkaminApi(Exception):
+class EdilkaminApiError(Exception):
     """Base class for exceptions in this module."""
 
 
-class NotInRightState(EdilkaminApi):
+class NotInRightStateError(EdilkaminApiError):
     """Exception raised when the device is not in the right state."""
 
     def __init__(self):

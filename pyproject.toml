@@ -48,25 +48,11 @@ target-version = "py313"
 select = [ "ALL" ]
 # Keep prior ignores from flake8
 ignore = [
-    "E501",  # line too long (handled by formatter/line-length)
-    "E203",  # whitespace before ':' (Black compatibility)
-#    "W503",  # line break before binary operator
-#    "W504"  # line break after binary operator
     "S101",
     "ANN",
     "PLR2004",
     "SLF001",
     "D",
-    "N818", # Custom exceptions should be named with an Error suffix
-    "S105",
-    "S106",
-    "ARG001",
-    "ARG002",
-    "TRY401",
-    "B904",
-    "BLE001",
-    "TRY300",
-    "INP001",
     "COM812",  # Avoid conflict with formatter
 ]
 

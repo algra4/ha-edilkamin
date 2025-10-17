@@ -15,7 +15,7 @@ from homeassistant.util.percentage import (
 
 from custom_components.edilkamin.api.edilkamin_async_api import (
     EdilkaminAsyncApi,
-    HttpException,
+    HttpError,
 )
 
 from .const import DOMAIN
@@ -95,8 +95,8 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
             if self._current_state is True:
                 self._current_speed = self.coordinator.get_fan_speed(self._index)
                 self.async_write_ha_state()
-        except HttpException as err:
-            _LOGGER.exception("Error fetching fan state: %s", str(err))
+        except HttpError:
+            _LOGGER.exception("Error fetching fan state")
             return
 
     async def async_turn_on(

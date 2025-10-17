@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from custom_components.edilkamin.api.edilkamin_async_api import (
     EdilkaminAsyncApi,
-    NotInRightState,
+    NotInRightStateError,
 )
 
 from .const import DOMAIN
@@ -61,12 +61,12 @@ class EdilkaminAirekareSwitch(CoordinatorEntity, SwitchEntity):
         """Return a unique_id for this entity."""
         return f"{self._mac_address}_airekare_switch"
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **_kwargs) -> None:
         """Turn the entity on."""
         await self._api.enable_airkare()
         await self.coordinator.async_refresh()
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **_kwargs):
         """Turn the entity off."""
         await self._api.disable_airkare()
         await self.coordinator.async_refresh()
@@ -96,12 +96,12 @@ class EdilkaminRelaxSwitch(CoordinatorEntity, SwitchEntity):
         """Return a unique_id for this entity."""
         return f"{self._mac_address}_relax_switch"
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **_kwargs) -> None:
         """Turn the entity on."""
         await self._api.enable_relax()
         await self.coordinator.async_refresh()
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **_kwargs):
         """Turn the entity off."""
         await self._api.disable_relax()
         await self.coordinator.async_refresh()
@@ -131,12 +131,12 @@ class EdilkaminChronoModeSwitch(CoordinatorEntity, SwitchEntity):
         """Return a unique_id for this entity."""
         return f"{self._mac_address}_chrono_mode_switch"
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **_kwargs) -> None:
         """Turn the entity on."""
         await self._api.enable_chrono_mode()
         await self.coordinator.async_refresh()
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **_kwargs):
         """Turn the entity off."""
         await self._api.disable_chrono_mode()
         await self.coordinator.async_refresh()
@@ -163,7 +163,12 @@ class EdilkaminStandByModeSwitch(CoordinatorEntity, SwitchEntity):
         standby_waiting_time = f"{standby_minutes}:{stand_by_sec} min"
 
         additional_att = {
-            "description": "When the Stand-by function is active, in the automatic and crono modes, the product switches off once the temperature set-point is reached and turns on again when the room temperature drops below the chosen value.",
+            "description": "When the Stand-by function is active, "
+            "in the automatic and crono modes, "
+            "the product switches off "
+            "once the temperature set-point is reached"
+            " and turns on again "
+            "when the room temperature drops below the chosen value.",
             "details": standby_waiting_time,
         }
         self._attr_extra_state_attributes = additional_att
@@ -178,23 +183,23 @@ class EdilkaminStandByModeSwitch(CoordinatorEntity, SwitchEntity):
         """Return a unique_id for this entity."""
         return f"{self._mac_address}_standby_mode_switch"
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **_kwargs) -> None:
         """Turn the entity on."""
         try:
             await self._api.enable_standby_mode()
             await self.coordinator.async_refresh()
-        except NotInRightState as e:
+        except NotInRightStateError as e:
             _LOGGER.warning(e)
             self._attr_is_on = False
             await self.coordinator.async_refresh()
             raise HomeAssistantError(e) from e
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **_kwargs):
         """Turn the entity off."""
         try:
             await self._api.disable_standby_mode()
             await self.coordinator.async_refresh()
-        except NotInRightState as e:
+        except NotInRightStateError as e:
             _LOGGER.warning(e)
             self._attr_is_on = True
             await self.coordinator.async_refresh()
