@@ -39,11 +39,11 @@ class TestCoordinatorWithNoData:
 
     def test_get_nb_fans_no_data(self, coordinator):
         """Test get_nb_fans returns default value when no data."""
-        assert coordinator.get_nb_fans() is None
+        assert coordinator.get_nb_fans() == 0
 
     def test_get_nb_alarms_no_data(self, coordinator):
         """Test get_nb_alarms returns 0 when no data."""
-        assert coordinator.get_nb_alarms() is None
+        assert coordinator.get_nb_alarms() == 0
 
     def test_get_alarms_no_data(self, coordinator):
         """Test get_alarms returns empty list when no data."""
@@ -132,7 +132,7 @@ class TestCoordinatorWithPartialData:
     def test_get_nb_fans_missing_installer_parameters(self, coordinator):
         """Test get_nb_fans with missing installer_parameters."""
         coordinator._device_info = {"nvm": {}}
-        assert coordinator.get_nb_fans() is None
+        assert coordinator.get_nb_fans() == 0
 
     def test_get_alarms_missing_alarms_array(self, coordinator):
         """Test get_alarms with missing alarms array."""
