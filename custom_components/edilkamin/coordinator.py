@@ -40,11 +40,16 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
 
     async def refresh_token(self) -> str:
         """Refresh the token only if expired."""
-
+        _LOGGER.debug("Refreshing token")
         if self._token is None or self.is_token_expired(self._token):
+            _LOGGER.debug("Token is expired or None, signing in again")
             self._token = await self.hass.async_add_executor_job(
                 edilkamin.sign_in, self._username, self._password
             )
+            _LOGGER.debug("Token refreshed")
+        else:
+            _LOGGER.debug("Token is still valid, using existing one")
+
         return self._token
 
     def is_token_expired(self, token: str) -> bool:
@@ -54,10 +59,12 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             exp = payload.get("exp")
             if exp is None:
                 return True
-            now = datetime.now(UTC).timestamp()
+            exp_date = datetime.fromtimestamp(exp, tz=UTC)
             # Add a buffer of 60 seconds to the expiration time
-            return now > (exp - 60)
+            return exp_date < datetime.now(tz=UTC) + timedelta(seconds=60)
         except (jwt.PyJWTError, KeyError):
+            return True
+        except Exception:  # noqa: BLE001
             return True
 
     async def update_device_information(self) -> None:
@@ -105,17 +112,17 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             .get(f"fan_{index}_ventilation")
         )
 
-    def get_nb_fans(self) -> int | None:
+    def get_nb_fans(self) -> int:
         """Get the number of fans."""
         return (
             self._device_info.get("nvm", {})
             .get("installer_parameters", {})
-            .get("fans_number", None)
+            .get("fans_number", 0)
         )
 
-    def get_nb_alarms(self) -> str | None:
+    def get_nb_alarms(self) -> int:
         """Get the number of alarms."""
-        return self._device_info.get("nvm", {}).get("alarms_log", {}).get("index", None)
+        return self._device_info.get("nvm", {}).get("alarms_log", {}).get("index", 0)
 
     def get_alarms(self) -> list:
         """Get the alarms."""
