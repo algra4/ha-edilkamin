@@ -1,9 +1,10 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 import logging
 
 import async_timeout
 import edilkamin
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+import jwt
 
 from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
 
@@ -38,10 +39,26 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
         )
 
     async def refresh_token(self) -> str:
-        """Login to refresh the token."""
-        return await self.hass.async_add_executor_job(
-            edilkamin.sign_in, self._username, self._password
-        )
+        """Refresh the token only if expired."""
+
+        if self._token is None or self.is_token_expired(self._token):
+            self._token = await self.hass.async_add_executor_job(
+                edilkamin.sign_in, self._username, self._password
+            )
+        return self._token
+
+    def is_token_expired(self, token: str) -> bool:
+        """Check if the token is expired."""
+        try:
+            payload = jwt.decode(token, options={"verify_signature": False})
+            exp = payload.get("exp")
+            if exp is None:
+                return True
+            now = datetime.now(UTC).timestamp()
+            # Add a buffer of 60 seconds to the expiration time
+            return now > (exp - 60)
+        except (jwt.PyJWTError, KeyError):
+            return True
 
     async def update_device_information(self) -> None:
         """Get the latest data and update the relevant Entity attributes."""
