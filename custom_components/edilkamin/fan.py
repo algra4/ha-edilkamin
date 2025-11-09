@@ -83,7 +83,7 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
     @property
     def is_on(self) -> bool:
         """Return true if the entity is on."""
-        return self._current_state is True
+        return self._current_state
 
     async def async_set_percentage(self, percentage: int) -> None:
         """Set the speed of the fan, as a percentage."""
