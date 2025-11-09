@@ -80,6 +80,11 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         """Flag supported features."""
         return FanEntityFeature.SET_SPEED
 
+    @property
+    def is_on(self) -> bool:
+        """Return true if the entity is on."""
+        return self._current_state
+
     async def async_set_percentage(self, percentage: int) -> None:
         """Set the speed of the fan, as a percentage."""
         self._current_speed = math.ceil(
@@ -98,14 +103,3 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         except HttpError:
             _LOGGER.exception("Error fetching fan state")
             return
-
-    async def async_turn_on(
-        self,
-        percentage: int | None = None,
-        preset_mode: str | None = None,
-        **kwargs,
-    ) -> None:
-        """Turn on the entity."""
-
-    async def async_turn_off(self, **kwargs) -> None:
-        """Turn off the entity."""
