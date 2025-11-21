@@ -32,10 +32,13 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
     nb_fans = coordinator.get_nb_fans()
 
-    fans = [EdilkaminFan(async_api, 1, coordinator)]
+    fans = [EdilkaminFan(api=async_api, index=1, coordinator=coordinator)]
 
     if nb_fans > 1:
-        fans.extend(EdilkaminFan(async_api, i) for i in range(2, nb_fans + 1))
+        fans.extend(
+            EdilkaminFan(api=async_api, index=i, coordinator=coordinator)
+            for i in range(2, nb_fans + 1)
+        )
 
     async_add_devices(fans)
 
