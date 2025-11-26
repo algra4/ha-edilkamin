@@ -1,3 +1,8 @@
+[![Tests](https://github.com/algra4/ha-edilkamin/actions/workflows/tests.yml/badge.svg)](https://github.com/algra4/ha-edilkamin/actions/workflows/tests.yml)
+[![Dependabot Updates](https://github.com/algra4/ha-edilkamin/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/algra4/ha-edilkamin/actions/workflows/dependabot/dependabot-updates)
+[![CodeQL](https://github.com/algra4/ha-edilkamin/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/algra4/ha-edilkamin/actions/workflows/github-code-scanning/codeql)
+
+
 # Testing Guide
 
 This guide explains how to set up the testing environment and run tests for the Edilkamin Home Assistant integration.
