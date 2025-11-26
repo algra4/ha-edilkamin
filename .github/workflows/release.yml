@@ -1,0 +1,48 @@
+name: Release
+# Déclenchement manuel via l'interface GitHub
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version de la release (ex: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Mandatory to commit and create the release
+
+    steps:
+      - name: Checkout code
+      
+        uses: actions/checkout@v6
+
+      - name: Update manifest.json version
+        run: |
+          # Use jq to properly update the "version" key
+          tmp=$(mktemp)
+          jq --arg v "${{ inputs.version }}" '.version = $v' custom_components/edilkamin/manifest.json > "$tmp" && mv "$tmp" custom_components/edilkamin/manifest.json
+          
+          # Visual check in logs
+          cat custom_components/edilkamin/manifest.json
+
+      - name: Commit & Push changes
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add custom_components/edilkamin/manifest.json
+          git commit -m "Bump version to ${{ inputs.version }}"
+          git push
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          tag_name: ${{ inputs.version }}
+          name: Release ${{ inputs.version }}
+          generate_release_notes: true
+          make_latest: "true"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
