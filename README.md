@@ -1,5 +1,11 @@
 # Edilkamin for Home Assistant
 
+[![Tests](https://github.com/algra4/ha-edilkamin/actions/workflows/tests.yml/badge.svg)](https://github.com/algra4/ha-edilkamin/actions/workflows/tests.yml)
+[![Dependabot Updates](https://github.com/algra4/ha-edilkamin/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/algra4/ha-edilkamin/actions/workflows/dependabot/dependabot-updates)
+[![CodeQL](https://github.com/algra4/ha-edilkamin/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/algra4/ha-edilkamin/actions/workflows/github-code-scanning/codeql)
+
+
+
 - [Edilkamin for Home Assistant](#edilkamin-for-home-assistant)
   - [Available sensors](#available-sensors)
     - [Binary sensors](#binary-sensors)
@@ -15,6 +21,7 @@
   - [Tested device](#tested-device)
   - [External dependencies](#external-dependencies)
   - [Thanks](#thanks)
+  - [Development notes](#development-notes)
 
 
 
