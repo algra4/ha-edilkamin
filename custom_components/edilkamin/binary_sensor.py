@@ -105,4 +105,4 @@ class EdilkaminCheckBinarySensor(BinarySensorEntity):
         except Exception:
             self._state = True
             self.async_write_ha_state()
-            _LOGGER.exception("Exception message: %s")
+            _LOGGER.exception("Exception occurred during check configuration")
