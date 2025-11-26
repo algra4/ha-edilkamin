@@ -16,5 +16,5 @@
     "@algra4"
   ],
   "iot_class": "cloud_polling",
-  "version": "3.0.1"
+  "version": "v4.4.0"
 }
