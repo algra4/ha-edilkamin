@@ -315,6 +315,8 @@ class EdilkaminAutonomySensor(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Fetch new state data for the sensor."""
         autonomy_second = self.coordinator.get_autonomy_second()
+        if autonomy_second is None:
+            return
         # Convert seconds to minutes
         minutes = divmod(autonomy_second, 60)
         self._state = f"{minutes}"
