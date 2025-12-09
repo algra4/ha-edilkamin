@@ -5,7 +5,7 @@
   "integration_type": "device",
   "documentation": "https://github.com/algra4/ha-edilkamin",
   "requirements": [
-    "edilkamin==1.4.1",
+    "edilkamin==1.6.0",
     "macaddress==2.0.2"
   ],
   "ssdp": [],

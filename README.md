@@ -177,7 +177,7 @@ mode: single
 
 - Home Assistant installs this integration's runtime dependencies from `custom_components/edilkamin/manifest.json` when the integration is loaded.
 - For local development and CI, dependencies are managed with `pyproject.toml` and `uv`.
-  - Install dev dependencies: `uv sync --group test`
+  - Install dev dependencies: `uv sync`
   - Run tests: `uv run pytest -v`
 - Linting/formatting uses Ruff (replacing flake8 and isort). Basic commands:
   - Lint: `uv run ruff check .`

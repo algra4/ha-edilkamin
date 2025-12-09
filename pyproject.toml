@@ -3,7 +3,7 @@ name = "ha-edilkamin"
 version = "0.1.0"
 requires-python = ">=3.13.2"
 dependencies = [
-    "edilkamin==1.4.1",
+    "edilkamin==1.6.0",
     "macaddress==2.0.2",
 ]
 
