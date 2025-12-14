@@ -99,7 +99,10 @@ class EdilkaminTemperatureSensor(CoordinatorEntity, SensorEntity):
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        self._state = self.coordinator.get_temperature()
+        temperature = self.coordinator.get_temperature()
+        if temperature is not None and temperature != 0:
+            self._state = temperature
+
         self.async_write_ha_state()
 
 
