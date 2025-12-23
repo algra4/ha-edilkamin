@@ -118,7 +118,11 @@ class EdilkaminClimateEntity(CoordinatorEntity, ClimateEntity):
         await self.coordinator.async_refresh()
 
     def _handle_coordinator_update(self) -> None:
-        self._attr_current_temperature = self.coordinator.get_temperature()
+        """Handle updated data from the coordinator."""
+        temperature = self.coordinator.get_temperature()
+        if temperature is not None and temperature != 0:
+            self._attr_current_temperature = temperature
+
         self._attr_target_temperature = self.coordinator.get_target_temperature()
         self._attr_fan_mode = str(self.coordinator.get_fan_speed())
 

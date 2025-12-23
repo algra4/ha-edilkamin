@@ -322,7 +322,7 @@ class TestEdilkaminAutonomySensor:
         sensor._handle_coordinator_update()
 
         # 3600 seconds = 60 minutes, divmod returns (60, 0)
-        assert sensor._state == "(60, 0)"
+        assert sensor._state == 60
         sensor.async_write_ha_state.assert_called_once()
 
     def test_handle_coordinator_update_with_none(self, mock_coordinator):
