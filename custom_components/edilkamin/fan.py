@@ -24,7 +24,7 @@ _LOGGER = logging.getLogger(__name__)
 
 SPEED_RANGE = (1, 5)  # away is not included in speeds and instead mapped to off
 
-PRESET_MODE_AUTO = "auto"
+PRESET_MODE_AUTO = "Auto"
 PRESET_MODES = [PRESET_MODE_AUTO]
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
