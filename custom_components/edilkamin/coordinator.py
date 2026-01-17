@@ -228,3 +228,31 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             .get("user_parameters", {})
             .get("manual_power")
         )
+
+    def is_water_compatible(self) -> bool:
+        """Check if the device is water compatible."""
+        return bool(
+            self._device_info.get("nvm", {})
+            .get("installer_parameters", {})
+            .get("is_water_pressure_sensor_present")
+        )
+
+    def get_water_temperature(self) -> float | None:
+        """Get the boiler temperature."""
+        return self._device_info.get("status", {}).get("temperatures", {}).get("boiler")
+
+    def get_target_water_temperature(self) -> str:
+        """Get the target water temperature."""
+        return (
+            self._device_info.get("nvm", {})
+            .get("user_parameters", {})
+            .get("water_temperature")
+        )
+
+    def get_water_pressure(self) -> float | None:
+        """Get the boiler pressure."""
+        return (
+            self._device_info.get("status", {})
+            .get("water_pressure", {})
+            .get("value_in_mbar")
+        )

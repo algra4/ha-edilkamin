@@ -65,15 +65,18 @@ The Integration creates the number of fans depending on the pellet stove
 
 ### Sensors
 
-| Name    | Description | Unit
-| -------- | ------- | ------- |
-| `Temperature`  |  The actual temperature   | celsius |
-| `Fan ${index}`  |  The fan speed  | int |
-| `Nb alarms`  |  The number of alarms | int |
-| `Actual power`  |  The pover of the pellet stove | int |
-| `Operational phase`  |  The phase of the pellet stove | Off, Ignition, On, Shutdown, Cooling, Alarm, Final cleaning, Unknown |
-| `Autonomy`  |  Time remaining before the pellet stove turns off if no pellets are added | minute |
-| `Power ons`  |  Number of times the pellet stove has been turn on | int |
+| Name    | Description | Unit | Condition |
+| -------- | ------- | ------- | ------- |
+| `Temperature`  |  The actual temperature   | celsius | Always |
+| `Fan ${index}`  |  The fan speed  | int | Always |
+| `Nb alarms`  |  The number of alarms | int | Always |
+| `Actual power`  |  The power of the pellet stove | int | Always |
+| `Operational phase`  |  The phase of the pellet stove | Off, Ignition, On, Shutdown, Cooling, Alarm, Final cleaning, Unknown | Always |
+| `Autonomy`  |  Time remaining before the pellet stove turns off if no pellets are added | minute | Always |
+| `Power ons`  |  Number of times the pellet stove has been turn on | int | Always |
+| `Water Temperature`  |  The actual water temperature for hydro stoves | celsius | Only for water-compatible devices |
+| `Water Target Temperature`  |  The target water temperature for hydro stoves | celsius | Only for water-compatible devices |
+| `Water Pressure`  |  The water pressure for hydro stoves | mbar | Only for water-compatible devices |
 
 ### Switches
 

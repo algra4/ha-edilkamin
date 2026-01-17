@@ -11,8 +11,9 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import UnitOfPressure, UnitOfTemperature
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util.unit_conversion import PressureConverter
 
 from .const import DOMAIN
 
@@ -60,6 +61,12 @@ async def async_setup_entry(
         sensors.extend(
             EdilkaminFanSensor(coordinator, i) for i in range(2, nb_fans + 1)
         )
+
+    if coordinator.is_water_compatible():
+        _LOGGER.debug("Adding water sensors")
+        sensors.extend(EdilkaminWaterTemperatureSensor(coordinator))
+        sensors.extend(EdilkaminWaterPressureSensor(coordinator))
+        sensors.extend(EdilkaminWaterTargetTemperatureSensor(coordinator))
 
     async_add_devices(sensors)
 
@@ -353,4 +360,130 @@ class EdilkaminPowerOnsSensor(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Fetch new state data for the sensor."""
         self._state = self.coordinator.get_power_ons()
+        self.async_write_ha_state()
+
+
+class EdilkaminWaterTemperatureSensor(CoordinatorEntity, SensorEntity):
+    """Representation of a Sensor."""
+
+    def __init__(self, coordinator) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._state = None
+        self._mac_address = self.coordinator.get_mac_address()
+
+        self._attr_name = "Water Temperature"
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:water-boiler"
+
+    @property
+    def device_class(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return SensorDeviceClass.TEMPERATURE
+
+    @property
+    def native_unit_of_measurement(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return UnitOfTemperature.CELSIUS
+
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return f"{self._mac_address}_water_temperature"
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._state
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        temperature = self.coordinator.get_water_temperature()
+        if temperature is not None and temperature != 0:
+            self._state = temperature
+
+        self.async_write_ha_state()
+
+class EdilkaminWaterTargetTemperatureSensor(CoordinatorEntity, SensorEntity):
+    """Representation of a Sensor."""
+
+    def __init__(self, coordinator) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._state = None
+        self._mac_address = self.coordinator.get_mac_address()
+
+        self._attr_name = "Water Target Temperature"
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:water-boiler"
+
+    @property
+    def device_class(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return SensorDeviceClass.TEMPERATURE
+
+    @property
+    def native_unit_of_measurement(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return UnitOfTemperature.CELSIUS
+
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return f"{self._mac_address}_water_target_temperature"
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._state
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        temperature = self.coordinator.get_target_water_temperature()
+        if temperature is not None and temperature != 0:
+            self._state = temperature
+
+        self.async_write_ha_state()
+
+class EdilkaminWaterPressureSensor(CoordinatorEntity, SensorEntity):
+    """Representation of a Sensor."""
+
+    def __init__(self, coordinator) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._state = None
+        self._mac_address = self.coordinator.get_mac_address()
+
+        self._attr_name = "Water Pressure"
+        self._attr_device_info = {"identifiers": {("edilkamin", self._mac_address)}}
+        self._attr_icon = "mdi:gauge"
+
+    @property
+    def device_class(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return SensorDeviceClass.PRESSURE
+
+    @property
+    def native_unit_of_measurement(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return UnitOfPressure.BAR
+
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return f"{self._mac_address}_water_pressure"
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._state
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        pressure = self.coordinator.get_water_pressure()
+        if pressure is not None and pressure != 0:
+            self._state = PressureConverter.convert(
+                pressure, UnitOfPressure.MBAR, UnitOfPressure.BAR
+            )
+
         self.async_write_ha_state()
