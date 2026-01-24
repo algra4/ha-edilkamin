@@ -24,6 +24,8 @@ _LOGGER = logging.getLogger(__name__)
 
 SPEED_RANGE = (1, 5)  # away is not included in speeds and instead mapped to off
 
+PRESET_MODE_AUTO = "Auto"
+PRESET_MODES = [PRESET_MODE_AUTO]
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
@@ -81,7 +83,7 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
     @property
     def supported_features(self) -> int:
         """Flag supported features."""
-        return FanEntityFeature.SET_SPEED
+        return FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
 
     @property
     def is_on(self) -> bool:
@@ -93,8 +95,20 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         self._current_speed = math.ceil(
             percentage_to_ranged_value(SPEED_RANGE, percentage)
         )
+        self._preset_mode = None
         await self._api.set_fan_speed(self._current_speed, self._index)
         self.schedule_update_ha_state()
+
+    @property
+    def preset_modes(self) -> list[str]:
+        """Return the list of available preset modes."""
+        return PRESET_MODES
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        """Set the preset mode of the fan."""
+        if preset_mode == PRESET_MODE_AUTO:
+            await self._api.set_fan_speed(6, self._index)
+            self.schedule_update_ha_state()
 
     def _handle_coordinator_update(self) -> None:
         """Fetch new state data for the sensor."""

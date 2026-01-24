@@ -27,7 +27,10 @@ _LOGGER = logging.getLogger(__name__)
 
 CLIMATE_HVAC_MODE_MANAGED = [HVACMode.HEAT, HVACMode.OFF]
 
-FAN_MODES_MANAGED = ["1", "2", "3", "4", "5"]
+
+FAN_PRESET_MODE_AUTO = "Auto"
+
+FAN_MODES_MANAGED = ["1", "2", "3", "4", "5", FAN_PRESET_MODE_AUTO]
 
 
 PRESET_AUTO = "Auto"
@@ -107,7 +110,10 @@ class EdilkaminClimateEntity(CoordinatorEntity, ClimateEntity):
 
     async def async_set_fan_mode(self, fan_mode):
         """Set new target fan mode."""
-        await self.api.set_fan_speed(fan_mode)
+        if fan_mode == FAN_PRESET_MODE_AUTO:
+            await self.api.set_fan_speed(6)  # 6 is auto mode
+        else:
+            await self.api.set_fan_speed(fan_mode)
         await self.coordinator.async_refresh()
 
     async def async_set_temperature(self, **kwargs):
@@ -124,7 +130,12 @@ class EdilkaminClimateEntity(CoordinatorEntity, ClimateEntity):
             self._attr_current_temperature = temperature
 
         self._attr_target_temperature = self.coordinator.get_target_temperature()
-        self._attr_fan_mode = str(self.coordinator.get_fan_speed())
+
+        fan_speed = self.coordinator.get_fan_speed()
+        if fan_speed == 6: # auto mode
+            self._attr_fan_mode = FAN_PRESET_MODE_AUTO
+        else:
+            self._attr_fan_mode = str(self.coordinator.get_fan_speed())
 
         power = self.coordinator.get_power_status()
         if power is True:
