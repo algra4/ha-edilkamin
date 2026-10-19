@@ -55,7 +55,10 @@ async def async_setup_entry(
     ]
 
     temperatures = (coordinator.data or {}).get("status", {}).get("temperatures", {})
-    for key, name in (("puffer", "Buffer temperature"), ("boiler", "Boiler temperature")):
+    for key, name in (
+        ("puffer", "Buffer temperature"),
+        ("boiler", "Boiler temperature"),
+    ):
         if key in temperatures:
             sensors.append(EdilkaminWaterTemperatureSensor(coordinator, key, name))
 
@@ -380,8 +383,10 @@ class EdilkaminWaterTemperatureSensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         value = (
-            (self.coordinator.data or {}).get("status", {})
-            .get("temperatures", {}).get(self._temperature_key)
+            (self.coordinator.data or {})
+            .get("status", {})
+            .get("temperatures", {})
+            .get(self._temperature_key)
         )
         if isinstance(value, (int, float)) and not isinstance(value, bool):
             return value
