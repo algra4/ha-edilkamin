@@ -54,6 +54,11 @@ async def async_setup_entry(
         EdilkaminPowerOnsSensor(coordinator),
     ]
 
+    temperatures = (coordinator.data or {}).get("status", {}).get("temperatures", {})
+    for key, name in (("puffer", "Buffer temperature"), ("boiler", "Boiler temperature")):
+        if key in temperatures:
+            sensors.append(EdilkaminWaterTemperatureSensor(coordinator, key, name))
+
     nb_fans = coordinator.get_nb_fans()
 
     if nb_fans > 1:
@@ -354,3 +359,34 @@ class EdilkaminPowerOnsSensor(CoordinatorEntity, SensorEntity):
         """Fetch new state data for the sensor."""
         self._state = self.coordinator.get_power_ons()
         self.async_write_ha_state()
+
+
+class EdilkaminWaterTemperatureSensor(CoordinatorEntity, SensorEntity):
+    """A hydronic temperature from the existing cloud coordinator."""
+
+    _attr_has_entity_name = True
+    _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator, key: str, name: str) -> None:
+        super().__init__(coordinator)
+        self._temperature_key = key
+        self._attr_name = name
+        mac_address = coordinator.get_mac_address()
+        self._attr_unique_id = f"{mac_address}_{key}_temperature"
+        self._attr_device_info = {"identifiers": {(DOMAIN, mac_address)}}
+
+    @property
+    def native_value(self) -> float | None:
+        value = (
+            (self.coordinator.data or {}).get("status", {})
+            .get("temperatures", {}).get(self._temperature_key)
+        )
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return value
+        return None
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.native_value is not None
