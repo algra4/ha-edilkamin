@@ -200,3 +200,41 @@ class TestCoordinatorWithValidData:
         """Test get_autonomy_second with valid data."""
         coordinator._device_info = {"status": {"pellet": {"autonomy_time": 3600}}}
         assert coordinator.get_autonomy_second() == 3600
+
+
+class TestCoordinatorTemperatureGetters:
+    """Test the temperature helpers shared by the sensor entities."""
+
+    def test_get_temperatures_no_data(self, coordinator):
+        """Test get_temperatures returns an empty mapping with no data."""
+        assert coordinator.get_temperatures() == {}
+
+    def test_get_temperatures_null_status(self, coordinator):
+        """Test get_temperatures tolerates an explicit null status."""
+        coordinator._device_info = {"status": None}
+        assert coordinator.get_temperatures() == {}
+
+    def test_get_temperatures_null_temperatures(self, coordinator):
+        """Test get_temperatures tolerates an explicit null temperatures."""
+        coordinator._device_info = {"status": {"temperatures": None}}
+        assert coordinator.get_temperatures() == {}
+
+    def test_get_temperatures_with_data(self, coordinator):
+        """Test get_temperatures returns the reported mapping."""
+        coordinator._device_info = {
+            "status": {"temperatures": {"puffer": 56.8, "boiler": 56.3}}
+        }
+        assert coordinator.get_temperatures() == {"puffer": 56.8, "boiler": 56.3}
+
+    def test_get_water_temperature_by_key(self, coordinator):
+        """Test get_water_temperature returns the reading for each key."""
+        coordinator._device_info = {
+            "status": {"temperatures": {"puffer": 56.8, "boiler": 56.3}}
+        }
+        assert coordinator.get_water_temperature("puffer") == 56.8
+        assert coordinator.get_water_temperature("boiler") == 56.3
+
+    def test_get_water_temperature_missing_key(self, coordinator):
+        """Test get_water_temperature returns None for an unreported key."""
+        coordinator._device_info = {"status": {"temperatures": {"enviroment": 22.8}}}
+        assert coordinator.get_water_temperature("puffer") is None

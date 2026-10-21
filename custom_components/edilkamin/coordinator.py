@@ -96,13 +96,17 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
         """Return the MAC address."""
         return self._mac_address
 
+    def get_temperatures(self) -> dict:
+        """Get the temperatures mapping reported by the device."""
+        return (self._device_info.get("status") or {}).get("temperatures") or {}
+
     def get_temperature(self) -> float | None:
         """Get the environment temperature."""
-        return (
-            self._device_info.get("status", {})
-            .get("temperatures", {})
-            .get("enviroment")
-        )
+        return self.get_temperatures().get("enviroment")
+
+    def get_water_temperature(self, key: str) -> float | None:
+        """Get a hydronic water temperature (e.g. puffer, boiler) by key."""
+        return self.get_temperatures().get(key)
 
     def get_fan_speed(self, index: int = 1) -> str:
         """Get the fan speed."""

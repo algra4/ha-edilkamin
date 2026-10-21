@@ -1,11 +1,11 @@
-"""Hydronic temperature sensors use the coordinator's existing cloud data."""
+"""Tests for the buffer tank and boiler water temperature sensors."""
 
 import asyncio
-import unittest
 from unittest.mock import Mock
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import UnitOfTemperature
+import pytest
 
 from custom_components.edilkamin.sensor import (
     EdilkaminWaterTemperatureSensor,
@@ -13,77 +13,114 @@ from custom_components.edilkamin.sensor import (
 )
 
 
-class TestHydronicTemperature(unittest.TestCase):
-    """Cover water readings and devices that do not report hydronic data."""
+@pytest.fixture
+def mock_coordinator():
+    """Create a mock coordinator instance."""
+    coordinator = Mock()
+    coordinator.get_mac_address = Mock(return_value="00:11:22:33:44:55")
+    coordinator.get_nb_fans = Mock(return_value=1)
+    coordinator.async_add_listener = Mock()
+    coordinator.last_update_success = True
+    return coordinator
 
-    def setUp(self):
-        self.coordinator = Mock()
-        self.coordinator.get_mac_address.return_value = "00:11:22:33:44:55"
-        self.coordinator.get_nb_fans.return_value = 1
-        self.coordinator.last_update_success = True
-        self.coordinator.data = {
-            "status": {"temperatures": {"puffer": 56.8, "boiler": 56.3}},
-        }
 
-    def sensor(self, key="puffer"):
-        return EdilkaminWaterTemperatureSensor(self.coordinator, key, key)
+class TestEdilkaminWaterTemperatureSensor:
+    """Test EdilkaminWaterTemperatureSensor class."""
 
-    def test_both_readings_and_distinct_ids(self):
-        buffer = self.sensor()
-        boiler = self.sensor("boiler")
-        assert buffer.native_value == 56.8
-        assert boiler.native_value == 56.3
+    def test_init(self, mock_coordinator):
+        """Test sensor initialization and metadata."""
+        sensor = EdilkaminWaterTemperatureSensor(
+            mock_coordinator, "puffer", "Buffer temperature"
+        )
+
+        assert sensor._temperature_key == "puffer"
+        assert sensor._attr_name == "Buffer temperature"
+        assert sensor._attr_icon == "mdi:thermometer-water"
+        assert sensor.unique_id == "00:11:22:33:44:55_puffer_temperature"
+        assert sensor.device_class == SensorDeviceClass.TEMPERATURE
+        assert sensor.native_unit_of_measurement == UnitOfTemperature.CELSIUS
+        assert sensor.state_class == SensorStateClass.MEASUREMENT
+
+    def test_buffer_and_boiler_have_distinct_unique_ids(self, mock_coordinator):
+        """Test the two water sensors expose distinct unique ids."""
+        buffer = EdilkaminWaterTemperatureSensor(
+            mock_coordinator, "puffer", "Buffer temperature"
+        )
+        boiler = EdilkaminWaterTemperatureSensor(
+            mock_coordinator, "boiler", "Boiler temperature"
+        )
+
         assert buffer.unique_id != boiler.unique_id
-        assert buffer.device_class == SensorDeviceClass.TEMPERATURE
-        assert buffer.native_unit_of_measurement == UnitOfTemperature.CELSIUS
-        assert buffer.state_class == SensorStateClass.MEASUREMENT
 
-    def test_updated_reading(self):
-        sensor = self.sensor()
-        self.coordinator.data["status"]["temperatures"]["puffer"] = 60.2
-        assert sensor.native_value == 60.2
+    def test_native_value_with_valid_reading(self, mock_coordinator):
+        """Test native_value returns the coordinator water temperature."""
+        mock_coordinator.get_water_temperature = Mock(return_value=56.8)
+        sensor = EdilkaminWaterTemperatureSensor(
+            mock_coordinator, "puffer", "Buffer temperature"
+        )
 
-    def test_zero_is_valid(self):
-        self.coordinator.data["status"]["temperatures"]["puffer"] = 0
-        assert self.sensor().native_value == 0
-        assert self.sensor().available
+        assert sensor.native_value == 56.8
+        assert sensor.available
+        mock_coordinator.get_water_temperature.assert_called_with("puffer")
 
-    def test_missing_or_invalid_reading_is_unavailable(self):
-        for value in (None, True, "invalid"):
-            with self.subTest(value=value):
-                self.coordinator.data["status"]["temperatures"]["puffer"] = value
-                assert self.sensor().native_value is None
-                assert not self.sensor().available
-        for data in (None, {}, {"status": {}}, {"status": {"temperatures": {}}}):
-            with self.subTest(data=data):
-                self.coordinator.data = data
-                assert self.sensor().native_value is None
-                assert not self.sensor().available
+    def test_native_value_zero_is_valid(self, mock_coordinator):
+        """Test a zero reading is treated as valid (unlike the ambient sensor)."""
+        mock_coordinator.get_water_temperature = Mock(return_value=0)
+        sensor = EdilkaminWaterTemperatureSensor(
+            mock_coordinator, "puffer", "Buffer temperature"
+        )
 
-    def test_cloud_failure_marks_reading_unavailable(self):
-        self.coordinator.last_update_success = False
-        assert not self.sensor().available
+        assert sensor.native_value == 0
+        assert sensor.available
 
-    def test_setup_only_creates_reported_sensors(self):
-        for temperatures, expected in (
+    @pytest.mark.parametrize("value", [None, True, False, "invalid"])
+    def test_native_value_rejects_invalid_readings(self, mock_coordinator, value):
+        """Test None, booleans and non-numeric readings are unavailable."""
+        mock_coordinator.get_water_temperature = Mock(return_value=value)
+        sensor = EdilkaminWaterTemperatureSensor(
+            mock_coordinator, "puffer", "Buffer temperature"
+        )
+
+        assert sensor.native_value is None
+        assert not sensor.available
+
+    def test_unavailable_when_cloud_update_failed(self, mock_coordinator):
+        """Test the sensor is unavailable when the last cloud update failed."""
+        mock_coordinator.get_water_temperature = Mock(return_value=56.8)
+        mock_coordinator.last_update_success = False
+        sensor = EdilkaminWaterTemperatureSensor(
+            mock_coordinator, "puffer", "Buffer temperature"
+        )
+
+        assert not sensor.available
+
+
+class TestWaterTemperatureSetup:
+    """Test async_setup_entry only creates the reported water sensors."""
+
+    @pytest.mark.parametrize(
+        ("temperatures", "expected_keys"),
+        [
             ({"puffer": 56.8, "boiler": 56.3}, {"puffer", "boiler"}),
             ({"puffer": 0}, {"puffer"}),
             ({"enviroment": 22.8}, set()),
-        ):
-            with self.subTest(temperatures=temperatures):
-                self.coordinator.data = {"status": {"temperatures": temperatures}}
-                hass = Mock()
-                hass.data = {"edilkamin": {"coordinator": self.coordinator}}
-                add_entities = Mock()
-                asyncio.run(async_setup_entry(hass, Mock(), add_entities))
-                sensors = add_entities.call_args.args[0]
-                keys = {
-                    sensor._temperature_key
-                    for sensor in sensors
-                    if isinstance(sensor, EdilkaminWaterTemperatureSensor)
-                }
-                assert keys == expected
+        ],
+    )
+    def test_setup_only_creates_reported_sensors(
+        self, mock_coordinator, temperatures, expected_keys
+    ):
+        """Test sensors are created only for the hydronic keys the stove reports."""
+        mock_coordinator.get_temperatures = Mock(return_value=temperatures)
+        hass = Mock()
+        hass.data = {"edilkamin": {"coordinator": mock_coordinator}}
+        add_entities = Mock()
 
+        asyncio.run(async_setup_entry(hass, Mock(), add_entities))
 
-if __name__ == "__main__":
-    unittest.main()
+        sensors = add_entities.call_args.args[0]
+        keys = {
+            sensor._temperature_key
+            for sensor in sensors
+            if isinstance(sensor, EdilkaminWaterTemperatureSensor)
+        }
+        assert keys == expected_keys

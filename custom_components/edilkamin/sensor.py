@@ -54,7 +54,8 @@ async def async_setup_entry(
         EdilkaminPowerOnsSensor(coordinator),
     ]
 
-    temperatures = (coordinator.data or {}).get("status", {}).get("temperatures", {})
+    # "puffer" is the Edilkamin API key for the buffer tank water temperature.
+    temperatures = coordinator.get_temperatures()
     for key, name in (
         ("puffer", "Buffer temperature"),
         ("boiler", "Boiler temperature"),
@@ -367,10 +368,10 @@ class EdilkaminPowerOnsSensor(CoordinatorEntity, SensorEntity):
 class EdilkaminWaterTemperatureSensor(CoordinatorEntity, SensorEntity):
     """A hydronic temperature from the existing cloud coordinator."""
 
-    _attr_has_entity_name = True
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
     _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:thermometer-water"
 
     def __init__(self, coordinator, key: str, name: str) -> None:
         super().__init__(coordinator)
@@ -382,12 +383,7 @@ class EdilkaminWaterTemperatureSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self) -> float | None:
-        value = (
-            (self.coordinator.data or {})
-            .get("status", {})
-            .get("temperatures", {})
-            .get(self._temperature_key)
-        )
+        value = self.coordinator.get_water_temperature(self._temperature_key)
         if isinstance(value, (int, float)) and not isinstance(value, bool):
             return value
         return None
