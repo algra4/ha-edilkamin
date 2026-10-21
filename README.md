@@ -68,6 +68,8 @@ The Integration creates the number of fans depending on the pellet stove
 | Name    | Description | Unit
 | -------- | ------- | ------- |
 | `Temperature`  |  The actual temperature   | celsius |
+| `Buffer temperature` | Buffer tank water temperature, when reported by the stove | celsius |
+| `Boiler temperature` | Boiler water temperature, when reported by the stove | celsius |
 | `Fan ${index}`  |  The fan speed  | int |
 | `Nb alarms`  |  The number of alarms | int |
 | `Actual power`  |  The pover of the pellet stove | int |
