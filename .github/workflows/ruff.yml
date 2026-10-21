@@ -16,5 +16,5 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Analysing the code ruff
-        run: uvx ruff check
+        run: uvx ruff@0.13.3 check
 
