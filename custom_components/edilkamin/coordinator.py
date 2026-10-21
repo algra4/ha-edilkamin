@@ -6,8 +6,6 @@ import edilkamin
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import jwt
 
-from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -34,9 +32,6 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
 
         self._token = None
         self._device_info = {}
-        self._edilkamin_wrapper = EdilkaminAsyncApi(
-            mac_address=mac_address, username=username, password=password, hass=hass
-        )
 
     async def refresh_token(self) -> str:
         """Refresh the token only if expired."""
@@ -70,9 +65,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
     async def update_device_information(self) -> None:
         """Get the latest data and update the relevant Entity attributes."""
         self._token = await self.refresh_token()
-        return await self.hass.async_add_executor_job(
-            edilkamin.device_info, self._token, self._mac_address
-        )
+        return await edilkamin.device_info(self._token, self._mac_address)
 
     async def _async_update_data(self):
         """Fetch data from the API."""
