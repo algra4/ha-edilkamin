@@ -43,7 +43,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = EdilkaminAsyncApi(
-        mac_address=mac_address, username=username, password=password, hass=hass
+        mac_address=mac_address,
+        username=username,
+        password=password,
+        hass=hass,
+        token_provider=coordinator.refresh_token,
     )
     hass.data[DOMAIN]["coordinator"] = coordinator
     register_device(hass, entry, mac_address)

@@ -1,3 +1,4 @@
+from collections.abc import Awaitable, Callable
 import logging
 
 import edilkamin
@@ -10,13 +11,23 @@ class EdilkaminAsyncApi:
     """Class to interact with the Edilkamin API."""
 
     def __init__(
-        self, mac_address, username: str, password: str, hass: HomeAssistant
+        self,
+        mac_address,
+        username: str,
+        password: str,
+        hass: HomeAssistant,
+        token_provider: Callable[[], Awaitable[str]] | None = None,
     ) -> None:
-        """Initialize the class."""
+        """Initialize the class.
+
+        ``token_provider`` lets the wrapper reuse an already cached token
+        (e.g. the coordinator's) instead of signing in on every call.
+        """
         self._hass = hass
         self._mac_address = mac_address
         self._username = username
         self._password = password
+        self._token_provider = token_provider
 
     def get_mac_address(self):
         """Get the mac address."""
@@ -79,6 +90,9 @@ class EdilkaminAsyncApi:
         await self.execute_command({"name": "check", "value": False})
 
     async def get_token(self):
+        """Return a valid token, reusing the shared provider when available."""
+        if self._token_provider is not None:
+            return await self._token_provider()
         return await self._hass.async_add_executor_job(
             edilkamin.sign_in, self._username, self._password
         )
@@ -86,9 +100,7 @@ class EdilkaminAsyncApi:
     async def get_info(self):
         """Get the device information."""
         token = await self.get_token()
-        return await self._hass.async_add_executor_job(
-            edilkamin.device_info, token, self._mac_address
-        )
+        return await edilkamin.device_info(token, self._mac_address)
 
     async def enable_standby_mode(self):
         """Set the standby mode."""
@@ -124,9 +136,7 @@ class EdilkaminAsyncApi:
         """Execute the command."""
         token = await self.get_token()
         _LOGGER.debug("Execute command with payload = %s", payload)
-        return await self._hass.async_add_executor_job(
-            edilkamin.mqtt_command, token, self._mac_address, payload
-        )
+        return await edilkamin.mqtt_command(token, self._mac_address, payload)
 
 
 class HttpError(Exception):
