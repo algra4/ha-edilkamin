@@ -76,6 +76,47 @@ The Integration creates the number of fans depending on the pellet stove
 | `Operational phase`  |  The phase of the pellet stove | Off, Ignition, On, Shutdown, Cooling, Alarm, Final cleaning, Unknown |
 | `Autonomy`  |  Time remaining before the pellet stove turns off if no pellets are added | minute |
 | `Power ons`  |  Number of times the pellet stove has been turn on | int |
+| `Daily schedule` | Today's programmed chrono slots; state is `enabled` or `disabled` | enum |
+
+#### Daily schedule
+
+The read-only `Daily schedule` sensor exposes the stove's programmed day for dashboards
+and templates. It reuses the existing coordinator data and does not make extra cloud
+requests or change the stove's program. If the selected weekly schedule is absent or
+malformed, or the cloud update fails, the sensor is unavailable rather than showing an
+empty/off program. Devices without chrono data therefore expose an unavailable sensor.
+
+Attributes:
+
+| Attribute | Meaning |
+| --------- | ------- |
+| `date` | Day represented, as `YYYY-MM-DD` in Home Assistant's configured time zone |
+| `timezone` | Home Assistant's configured time zone |
+| `slots` | 48 half-hour values: index 0 is 00:00–00:30, index 1 is 00:30–01:00, …, index 47 is 23:30–24:00 |
+| `chrono_active` | Whether the stove's chrono program is enabled |
+| `is_auto` | `true` selects `temperature_ranges`; `false` selects `power_ranges` |
+| `economy_temperature` | Programmed Economy setpoint, if reported by the stove |
+| `comfort_temperature` | Programmed Comfort setpoint, if reported by the stove |
+
+In automatic mode, slot values are `0` (off), `1` (Economy), and `2` (Comfort).
+In manual mode, values are `0` (off) and `1`–`5` (power levels). The source weekly
+arrays are ordered Monday through Sunday, with 48 values per day. Disabling chrono
+retains the programmed slots for inspection; it does not erase them. The day switches
+on the next coordinator update after local midnight (normally within 15 seconds).
+Slots represent wall-clock half-hours, so daylight-saving transition days still have
+48 entries; they are not a list of 48 unique UTC intervals. A programmed slot describes
+the requested schedule, not whether the stove is currently burning or in standby.
+
+Example template (replace the entity ID with the one created for your device):
+
+```jinja2
+{% set slots = state_attr('sensor.edilkamin_stove_daily_schedule', 'slots') %}
+{% if has_value('sensor.edilkamin_stove_daily_schedule') and slots is not none %}
+  {{ slots[now().hour * 2 + now().minute // 30] }}
+{% else %}
+  unavailable
+{% endif %}
+```
 
 ### Switches
 
