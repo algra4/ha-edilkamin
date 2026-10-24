@@ -15,6 +15,7 @@ from homeassistant.const import UnitOfTemperature
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
+from .schedule import EdilkaminDailyScheduleSensor
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -46,6 +47,7 @@ async def async_setup_entry(
 
     sensors = [
         EdilkaminTemperatureSensor(coordinator),
+        EdilkaminDailyScheduleSensor(coordinator),
         EdilkaminFanSensor(coordinator, 1),
         EdilkaminAlarmSensor(coordinator),
         EdilkaminActualPowerSensor(coordinator),
