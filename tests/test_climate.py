@@ -253,7 +253,7 @@ class TestClimateSetup:
         hass.data = {
             DOMAIN: {
                 "test_entry": mock_api,
-                "coordinator": mock_coordinator,
+                "coordinators": {"test_entry": mock_coordinator},
             }
         }
         async_add_devices = Mock()

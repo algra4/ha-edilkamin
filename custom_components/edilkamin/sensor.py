@@ -11,7 +11,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfTemperature, UnitOfTime
+from homeassistant.const import UnitOfMass, UnitOfTemperature, UnitOfTime
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -37,12 +37,12 @@ OPERATIONAL_STATES = {
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    _config_entry: ConfigEntry,
+    config_entry: ConfigEntry,
     async_add_devices: AddEntitiesCallback,
 ):
     """Add sensors for passed config_entry in HA."""
 
-    coordinator = hass.data[DOMAIN]["coordinator"]
+    coordinator = hass.data[DOMAIN]["coordinators"][config_entry.entry_id]
 
     sensors = [
         EdilkaminTemperatureSensor(coordinator),
@@ -72,7 +72,40 @@ async def async_setup_entry(
             EdilkaminFanSensor(coordinator, i) for i in range(2, nb_fans + 1)
         )
 
+    if coordinator.pellet is not None and coordinator.pellet.enabled:
+        sensors.append(EdilkaminPelletSensor(coordinator))
     async_add_devices(sensors)
+
+
+class EdilkaminPelletSensor(CoordinatorEntity, SensorEntity):
+    """Cumulative estimate since first enable, never lifetime multiplication."""
+
+    _attr_name = "Estimated pellet consumption"
+    _attr_device_class = SensorDeviceClass.WEIGHT
+    _attr_native_unit_of_measurement = UnitOfMass.KILOGRAMS
+    _attr_state_class = SensorStateClass.TOTAL_INCREASING
+    _attr_suggested_display_precision = 2
+    _attr_icon = "mdi:grain"
+
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        mac = coordinator.get_mac_address()
+        self._attr_unique_id = f"{mac}_estimated_pellet_consumption"
+        self._attr_device_info = {"identifiers": {(DOMAIN, mac)}}
+
+    @property
+    def native_value(self):
+        return self.coordinator.pellet.state["kg"]
+
+    @property
+    def available(self):
+        return (
+            super().available
+            and not self.coordinator.pellet.storage_invalid
+            and all(
+                self.coordinator.get_working_hours(p) is not None for p in range(1, 6)
+            )
+        )
 
 
 class EdilkaminTemperatureSensor(CoordinatorEntity, SensorEntity):

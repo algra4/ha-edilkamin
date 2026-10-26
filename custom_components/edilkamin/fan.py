@@ -30,7 +30,7 @@ PRESET_MODES = [PRESET_MODE_AUTO]
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
     async_api = hass.data[DOMAIN][config_entry.entry_id]
-    coordinator = hass.data[DOMAIN]["coordinator"]
+    coordinator = hass.data[DOMAIN]["coordinators"][config_entry.entry_id]
 
     nb_fans = coordinator.get_nb_fans()
 

@@ -112,10 +112,11 @@ class TestWaterTemperatureSetup:
         """Test sensors are created only for the hydronic keys the stove reports."""
         mock_coordinator.get_temperatures = Mock(return_value=temperatures)
         hass = Mock()
-        hass.data = {"edilkamin": {"coordinator": mock_coordinator}}
+        mock_coordinator.pellet = None
+        hass.data = {"edilkamin": {"coordinators": {"test": mock_coordinator}}}
         add_entities = Mock()
 
-        asyncio.run(async_setup_entry(hass, Mock(), add_entities))
+        asyncio.run(async_setup_entry(hass, Mock(entry_id="test"), add_entities))
 
         sensors = add_entities.call_args.args[0]
         keys = {

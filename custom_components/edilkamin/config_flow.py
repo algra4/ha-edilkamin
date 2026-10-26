@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 
 from homeassistant import config_entries
+from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 import macaddress
 import voluptuous as vol
@@ -12,6 +13,14 @@ import voluptuous as vol
 from custom_components.edilkamin.api.edilkamin_async_api import EdilkaminAsyncApi
 
 from .const import DOMAIN, MAC_ADDRESS, PASSWORD, USERNAME
+from .pellet import (
+    COEFFICIENTS,
+    ENABLED,
+    InvalidPelletStorageError,
+    PelletEstimate,
+    entry_lock,
+    settings,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +37,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Edilkamin."""
 
     VERSION = 2
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(_config_entry):
+        return PelletOptionsFlow()
 
     async def async_step_user(self, user_input):
         """Handle the initial step."""
@@ -73,6 +87,59 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+        )
+
+
+class PelletOptionsFlow(config_entries.OptionsFlow):
+    """Optional user calibration, with no universal coefficients."""
+
+    async def async_step_init(self, user_input=None):
+        errors = {}
+        if user_input is not None:
+            try:
+                validated = settings(user_input)
+            except vol.Invalid:
+                errors["base"] = "invalid_coefficient"
+            else:
+                entry = self.config_entry
+                async with entry_lock(self.hass, entry.entry_id):
+                    coordinator = (
+                        self.hass.data[DOMAIN]
+                        .get("coordinators", {})
+                        .get(entry.entry_id)
+                    )
+                    estimate = coordinator.pellet if coordinator is not None else None
+                    try:
+                        if estimate is None:
+                            estimate = PelletEstimate(self.hass, entry.entry_id)
+                            await estimate.async_load(entry.options)
+                        await estimate.async_configure(validated)
+                    except InvalidPelletStorageError:
+                        # Disabling must remain possible without modifying a
+                        # damaged file. Re-enabling requires a restored backup;
+                        # loading while disabled records the missed boundary.
+                        if validated[ENABLED]:
+                            errors["base"] = "invalid_pellet_storage"
+                        else:
+                            return self.async_create_entry(title="", data=validated)
+                    else:
+                        return self.async_create_entry(title="", data=validated)
+
+        options = self.config_entry.options
+        schema = {vol.Required(ENABLED, default=options.get(ENABLED, False)): bool}
+        for key in COEFFICIENTS:
+            schema[
+                vol.Optional(
+                    key,
+                    description={
+                        "suggested_value": str(options[key])
+                        if options.get(key) is not None
+                        else ""
+                    },
+                )
+            ] = str
+        return self.async_show_form(
+            step_id="init", data_schema=vol.Schema(schema), errors=errors
         )
 
 

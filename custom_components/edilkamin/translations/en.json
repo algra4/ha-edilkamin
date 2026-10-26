@@ -18,5 +18,25 @@
         }
       }
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Estimated pellet consumption",
+        "description": "Optional estimate from whole-hour counters. Blank = unknown. Enter positive finite kg/h. Changing calibration skips the interval through the next valid reading and permanently marks the estimate incomplete.",
+        "data": {
+          "pellet_estimate_enabled": "Enable pellet estimate",
+          "pellet_p1_kg_h": "P1 kg/h (blank = unknown)",
+          "pellet_p2_kg_h": "P2 kg/h (blank = unknown)",
+          "pellet_p3_kg_h": "P3 kg/h (blank = unknown)",
+          "pellet_p4_kg_h": "P4 kg/h (blank = unknown)",
+          "pellet_p5_kg_h": "P5 kg/h (blank = unknown)"
+        }
+      }
+    },
+    "error": {
+      "invalid_coefficient": "Enter positive finite kg/h values, or leave blank for unknown.",
+      "invalid_pellet_storage": "The pellet estimate storage is invalid. Restore a backup before enabling the estimate. You can disable it without overwriting the file."
+    }
   }
 }

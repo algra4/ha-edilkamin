@@ -113,9 +113,10 @@ async def test_setup_registers_six_distinct_entities():
     coordinator.get_temperatures.return_value = {}
     coordinator.get_nb_fans.return_value = 1
     hass = Mock()
-    hass.data = {DOMAIN: {"coordinator": coordinator}}
+    coordinator.pellet = None
+    hass.data = {DOMAIN: {"coordinators": {"test": coordinator}}}
     add_entities = Mock()
-    await async_setup_entry(hass, Mock(), add_entities)
+    await async_setup_entry(hass, Mock(entry_id="test"), add_entities)
     sensors = [
         entity
         for entity in add_entities.call_args.args[0]

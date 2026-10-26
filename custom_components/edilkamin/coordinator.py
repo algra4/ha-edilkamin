@@ -32,6 +32,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
 
         self._token = None
         self._device_info = {}
+        self.pellet = None
 
     async def refresh_token(self) -> str:
         """Refresh the token only if expired."""
@@ -74,6 +75,8 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             # handled by the data update coordinator.
             async with async_timeout.timeout(10):
                 self._device_info = await self.update_device_information()
+                if self.pellet is not None:
+                    await self.pellet.async_update(self)
                 _LOGGER.debug("Data updated successfully")
                 _LOGGER.debug(self._device_info)
                 return self._device_info
