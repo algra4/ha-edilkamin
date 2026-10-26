@@ -11,7 +11,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import UnitOfTemperature, UnitOfTime
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -52,6 +52,8 @@ async def async_setup_entry(
         EdilkaminOperationalSensor(coordinator),
         EdilkaminAutonomySensor(coordinator),
         EdilkaminPowerOnsSensor(coordinator),
+        EdilkaminWorkingHoursSensor(coordinator),
+        *(EdilkaminWorkingHoursSensor(coordinator, power) for power in range(1, 6)),
     ]
 
     # "puffer" is the Edilkamin API key for the buffer tank water temperature.
@@ -363,6 +365,34 @@ class EdilkaminPowerOnsSensor(CoordinatorEntity, SensorEntity):
         """Fetch new state data for the sensor."""
         self._state = self.coordinator.get_power_ons()
         self.async_write_ha_state()
+
+
+class EdilkaminWorkingHoursSensor(CoordinatorEntity, SensorEntity):
+    """Lifetime working hours, independent of resettable service counters."""
+
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
+    _attr_state_class = SensorStateClass.TOTAL_INCREASING
+    _attr_icon = "mdi:timer-outline"
+
+    def __init__(self, coordinator, power: int | None = None) -> None:
+        super().__init__(coordinator)
+        self._power = power
+        suffix = "total" if power is None else f"p{power}"
+        self._attr_name = (
+            "Total working hours" if power is None else f"P{power} working hours"
+        )
+        mac_address = coordinator.get_mac_address()
+        self._attr_unique_id = f"{mac_address}_{suffix}_working_hours"
+        self._attr_device_info = {"identifiers": {(DOMAIN, mac_address)}}
+
+    @property
+    def native_value(self) -> int | None:
+        return self.coordinator.get_working_hours(self._power)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.native_value is not None
 
 
 class EdilkaminWaterTemperatureSensor(CoordinatorEntity, SensorEntity):
