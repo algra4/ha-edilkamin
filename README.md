@@ -76,6 +76,19 @@ The Integration creates the number of fans depending on the pellet stove
 | `Operational phase`  |  The phase of the pellet stove | Off, Ignition, On, Shutdown, Cooling, Alarm, Final cleaning, Unknown |
 | `Autonomy`  |  Time remaining before the pellet stove turns off if no pellets are added | minute |
 | `Power ons`  |  Number of times the pellet stove has been turn on | int |
+| `P1 working hours` ... `P5 working hours` | Lifetime working time at each power level | h |
+| `Total working hours` | Sum of all five lifetime working-time counters | h |
+
+Working hours come from `nvm.total_counters.p1_working_time` through
+`p5_working_time`, without conversion. The hour unit was checked against the
+physical remote control of a Pellkamin 10 evo plus; other models have not been
+independently verified. These duration sensors use `total_increasing` because
+they accumulate operating time; Home Assistant treats a decrease as a new meter
+cycle. Missing or invalid counters make the affected sensor unavailable, never
+zero. The total requires all five counters, including explicitly reported zeros.
+The total covers P1-P5 working time, not necessarily every operating phase.
+Resettable `nvm.service_counters` are deliberately not used or exposed: they must
+not be mixed with lifetime hours, and their reset semantics need separate validation.
 
 ### Switches
 
