@@ -78,8 +78,8 @@ class EdilkaminClimateEntity(CoordinatorEntity, ClimateEntity):
         self._attr_hvac_mode = HVACMode.OFF  # default hvac mode
 
         self._mac_address = self.coordinator.get_mac_address()
-        self._attr_max_temp = 24
-        self._attr_min_temp = 14
+        self._attr_max_temp = 35
+        self._attr_min_temp = 5
 
         self._attr_preset_modes = PRESET_MODES
         self._attr_preset_mode = PRESET_AUTO
@@ -132,7 +132,7 @@ class EdilkaminClimateEntity(CoordinatorEntity, ClimateEntity):
         self._attr_target_temperature = self.coordinator.get_target_temperature()
 
         fan_speed = self.coordinator.get_fan_speed()
-        if fan_speed == 6: # auto mode
+        if fan_speed == 6:  # auto mode
             self._attr_fan_mode = FAN_PRESET_MODE_AUTO
         else:
             self._attr_fan_mode = str(self.coordinator.get_fan_speed())

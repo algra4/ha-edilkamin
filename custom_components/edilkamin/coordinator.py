@@ -210,6 +210,30 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             .get("power_ons", None)
         )
 
+    def get_working_hours(self, power: int | None = None) -> int | None:
+        """Get lifetime hours at one power level or the complete P1-P5 sum.
+
+        The API reports whole hours. Missing or malformed counters must not
+        become zero: a partial sum would look like a lifetime counter reset.
+        """
+        counters = self._device_info
+        for key in ("nvm", "total_counters"):
+            if not isinstance(counters, dict):
+                return None
+            counters = counters.get(key)
+        if not isinstance(counters, dict):
+            return None
+        if power is not None and (type(power) is not int or power not in range(1, 6)):
+            return None
+        levels = range(1, 6) if power is None else (power,)
+        total = 0
+        for level in levels:
+            value = counters.get(f"p{level}_working_time")
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                return None
+            total += value
+        return total
+
     def is_auto(self) -> bool:
         """Check if the device is in auto mode."""
         return (
