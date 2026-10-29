@@ -19,6 +19,7 @@ test = [
     "ruff==0.13.3",
     "pre-commit-uv>=4.1.5",
     "pyjwt>=2.10.0",
+    "voluptuous-serialize>=2.6.0",
 ]
 
 [tool.coverage.run]

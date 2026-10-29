@@ -55,8 +55,10 @@ async def ha(tmp_path):
     frame.async_setup(hass)
     hass.config_entries = ConfigEntries(hass, {})
     await area_registry.async_load(hass)
-    await entity_registry.async_load(hass)
+    if hasattr(device_registry, "async_setup"):
+        device_registry.async_setup(hass)
     await device_registry.async_load(hass)
+    await entity_registry.async_load(hass)
     yield hass
     await hass.async_stop()
 
@@ -573,7 +575,22 @@ async def test_actual_ha_entity_lifecycle(ha):
     readings(c, [10, 0, 0, 0, 0])
     await c.pellet.async_update(c)
     c.last_update_success = True
+    entry = ConfigEntry(
+        domain=DOMAIN,
+        entry_id="one",
+        data={},
+        options=OPTIONS,
+        title="offline",
+        unique_id="one",
+        version=2,
+        minor_version=1,
+        source="user",
+        discovery_keys=MappingProxyType({}),
+        subentries_data=None,
+    )
+    ha.config_entries._entries[entry.entry_id] = entry
     platforms = []
+    entities = {}
     for domain, entity in (
         ("sensor", EdilkaminPelletSensor(c)),
         ("binary_sensor", EdilkaminPelletIncompleteSensor(c)),
@@ -587,16 +604,18 @@ async def test_actual_ha_entity_lifecycle(ha):
             scan_interval=timedelta(seconds=30),
             entity_namespace=None,
         )
+        platform.config_entry = entry
         await platform.async_add_entities([entity])
         platforms.append(platform)
-    assert ha.states.get("sensor.estimated_pellet_consumption").state == "0.0"
-    diagnostic = ha.states.get("binary_sensor.pellet_estimate_incomplete")
+        entities[domain] = entity.entity_id
+    assert ha.states.get(entities["sensor"]).state == "0.0"
+    diagnostic = ha.states.get(entities["binary_sensor"])
     assert diagnostic.state == "off"
     readings(c, [12, 0, 0, 1, 0])
     await c.pellet.async_update(c)
     c.async_set_updated_data(c._device_info)
     await ha.async_block_till_done()
-    assert ha.states.get("sensor.estimated_pellet_consumption").state == "1.0"
+    assert ha.states.get(entities["sensor"]).state == "1.0"
     assert ha.states.get(diagnostic.entity_id).state == "on"
     assert ha.states.get(diagnostic.entity_id).attributes["reasons"] == [
         "p4_uncalibrated"
@@ -604,11 +623,11 @@ async def test_actual_ha_entity_lifecycle(ha):
     c.last_update_success = False
     c.async_update_listeners()
     await ha.async_block_till_done()
-    assert ha.states.get("sensor.estimated_pellet_consumption").state == "unavailable"
+    assert ha.states.get(entities["sensor"]).state == "unavailable"
     c.last_update_success = True
     c.async_update_listeners()
     await ha.async_block_till_done()
-    assert ha.states.get("sensor.estimated_pellet_consumption").state == "1.0"
+    assert ha.states.get(entities["sensor"]).state == "1.0"
     for platform in platforms:
         await platform.async_reset()
     assert not c._listeners
