@@ -43,7 +43,7 @@ async def _async_setup_entry_locked(hass: HomeAssistant, entry: ConfigEntry) -> 
     username = entry.data[USERNAME]
     password = entry.data[PASSWORD]
 
-    coordinator = EdilkaminCoordinator(hass, username, password, mac_address)
+    coordinator = EdilkaminCoordinator(hass, username, password, mac_address, entry)
 
     estimate = PelletEstimate(hass, entry.entry_id)
     try:
