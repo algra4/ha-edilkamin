@@ -13,8 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.13.2"]
-        homeassistant-version: ["2025.5.0", "2025.9.0"]
+        include:
+          - python-version: "3.13"
+            homeassistant-version: "2025.5.0"
+          - python-version: "3.13"
+            homeassistant-version: "2025.9.0"
+          - python-version: "3.14"
+            homeassistant-version: "2026.10.4"
 
     steps:
     - uses: actions/checkout@v7
@@ -29,20 +34,22 @@ jobs:
       with:
         enable-cache: true
 
-    - name: Install dependencies with uv (using pyproject)
+    - name: Install test dependencies and Home Assistant
       run: |
-        uv sync --all-extras --dev
+        uv venv --python "${{ matrix.python-version }}"
+        uv pip install -e . --group test "homeassistant==${{ matrix.homeassistant-version }}"
 
-    - name: Install Home Assistant ${{ matrix.homeassistant-version }}
-      run: |
-        uv pip install "homeassistant==${{ matrix.homeassistant-version }}"
+    # HA 2025.9's aiodns release uses pycares APIs removed in version 5.
+    - name: Constrain pycares for Home Assistant 2025.9
+      if: matrix.homeassistant-version == '2025.9.0'
+      run: uv pip install 'pycares<5'
 
-    - name: Run tests with pytest (via uv)
+    - name: Run tests with pytest
       run: |
-        uv run pytest tests/ -v --cov=custom_components --cov-report=xml --cov-report=term
+        .venv/bin/pytest tests/ -v --cov=custom_components --cov-report=xml --cov-report=term
 
     - name: Upload coverage to Codecov
-      if: matrix.python-version == '3.13'
+      if: matrix.homeassistant-version == '2026.10.4'
       uses: codecov/codecov-action@v7
       with:
         file: ./coverage.xml
