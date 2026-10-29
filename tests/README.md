@@ -28,6 +28,12 @@ Install all dependencies declared in pyproject.toml, the dev dependency-group is
 uv sync
 ```
 
+CI tests Home Assistant 2025.5.0 and 2025.9.0 on Python 3.13, plus
+2026.10.4 on Python 3.14. It installs the `test` dependency group together
+with the selected HA version instead of syncing the default `dev` group,
+which pins HA 2025.5.0. For 2025.9.0, CI also constrains `pycares<5`:
+its `aiodns` version imports APIs removed by pycares 5.
+
 ## Running Tests
 
 ### Run all tests

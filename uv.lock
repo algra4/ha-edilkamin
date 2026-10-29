@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.13.2"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -907,6 +907,16 @@ dev = [
     { name = "pytest-aiohttp" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "voluptuous-serialize" },
+]
+test = [
+    { name = "pre-commit-uv" },
+    { name = "pyjwt" },
+    { name = "pytest" },
+    { name = "pytest-aiohttp" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "voluptuous-serialize" },
 ]
 
 [package.metadata]
@@ -924,6 +934,16 @@ dev = [
     { name = "pytest-aiohttp", specifier = "==1.1.0" },
     { name = "pytest-cov", specifier = "==7.0.0" },
     { name = "ruff", specifier = "==0.13.3" },
+    { name = "voluptuous-serialize", specifier = ">=2.6.0" },
+]
+test = [
+    { name = "pre-commit-uv", specifier = ">=4.1.5" },
+    { name = "pyjwt", specifier = ">=2.10.0" },
+    { name = "pytest", specifier = "==8.4.2" },
+    { name = "pytest-aiohttp", specifier = "==1.1.0" },
+    { name = "pytest-cov", specifier = "==7.0.0" },
+    { name = "ruff", specifier = "==0.13.3" },
+    { name = "voluptuous-serialize", specifier = ">=2.6.0" },
 ]
 
 [[package]]

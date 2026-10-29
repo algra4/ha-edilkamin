@@ -9,6 +9,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -23,8 +24,11 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
-    coordinator = hass.data[DOMAIN]["coordinator"]
+    coordinator = hass.data[DOMAIN]["coordinators"][config_entry.entry_id]
     async_api = hass.data[DOMAIN][config_entry.entry_id]
+
+    if coordinator.pellet is not None and coordinator.pellet.enabled:
+        async_add_devices([EdilkaminPelletIncompleteSensor(coordinator)])
 
     async_add_devices(
         [
@@ -32,6 +36,32 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
             EdilkaminCheckBinarySensor(async_api),
         ]
     )
+
+
+class EdilkaminPelletIncompleteSensor(CoordinatorEntity, BinarySensorEntity):
+    """Sticky indication that some enabled consumption could not be estimated."""
+
+    _attr_name = "Pellet estimate incomplete"
+    _attr_device_class = BinarySensorDeviceClass.PROBLEM
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        mac = coordinator.get_mac_address()
+        self._attr_unique_id = f"{mac}_pellet_estimate_incomplete"
+        self._attr_device_info = {"identifiers": {(DOMAIN, mac)}}
+
+    @property
+    def is_on(self):
+        return self.coordinator.pellet.incomplete
+
+    @property
+    def extra_state_attributes(self):
+        return {"reasons": list(self.coordinator.pellet.state["reasons"])}
+
+    @property
+    def available(self):
+        return super().available and not self.coordinator.pellet.storage_invalid
 
 
 class EdilkaminTankBinarySensor(CoordinatorEntity, BinarySensorEntity):
