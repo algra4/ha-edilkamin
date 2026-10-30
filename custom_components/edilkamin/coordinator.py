@@ -1,16 +1,10 @@
-from __future__ import annotations
-
+import asyncio
 from datetime import UTC, datetime, timedelta
 import logging
-from typing import TYPE_CHECKING
 
-import async_timeout
 import edilkamin
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import jwt
-
-if TYPE_CHECKING:
-    from homeassistant.config_entries import ConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,8 +18,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
         username: str,
         password: str,
         mac_address: str,
-        *,
-        config_entry: ConfigEntry | None = None,
+        config_entry=None,
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
@@ -81,7 +74,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
         try:
             # Note: asyncio.TimeoutError and aiohttp.ClientError are already
             # handled by the data update coordinator.
-            async with async_timeout.timeout(10):
+            async with asyncio.timeout(10):
                 self._device_info = await self.update_device_information()
                 _LOGGER.debug("Data updated successfully")
                 _LOGGER.debug(self._device_info)

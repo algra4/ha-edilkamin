@@ -176,6 +176,8 @@ The raw `slots` attribute remains available. Example current-slot template:
 
 ## Installation
 
+Requires Home Assistant 2026.3.0 or later.
+
 Click on this button:
 
 [![Open your Home Assistant instance and open the repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg?style=flat-square)](https://my.home-assistant.io/redirect/hacs_repository/?owner=algra4&repository=ha-edilkamin&category=integration)
@@ -271,5 +273,4 @@ mode: single
 - Linting/formatting uses Ruff (replacing flake8 and isort). Basic commands:
   - Lint: `uv run ruff check .`
   - Format (optional): `uv run ruff format .`
-
 
