@@ -42,8 +42,12 @@ jobs:
         .venv/bin/pytest tests/ -v --cov=custom_components --cov-report=xml --cov-report=term
 
     - name: Upload coverage to Codecov
-      if: matrix.homeassistant-version == '2026.10.4'
+      if: >-
+        matrix.homeassistant-version == '2026.10.4' &&
+        (github.event_name != 'pull_request' ||
+         github.event.pull_request.head.repo.fork == false)
       uses: codecov/codecov-action@v7
       with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
+        files: ./coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
