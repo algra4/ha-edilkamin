@@ -1,5 +1,6 @@
 """Read-only daily chrono schedule from the existing cloud coordinator."""
 
+from itertools import groupby
 from typing import ClassVar
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -7,6 +8,27 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
+
+
+def schedule_periods(slots: list[int], *, is_auto: bool) -> list[dict[str, str]]:
+    """Group validated slots into local half-open HH:MM ranges ending at 24:00."""
+    periods = []
+    start = 0
+    for value, group in groupby(slots):
+        end = start + sum(1 for _ in group)
+        if is_auto:
+            mode = ("off", "economy", "comfort")[value]
+        else:
+            mode = "off" if value == 0 else f"power_{value}"
+        periods.append(
+            {
+                "start": f"{start // 2:02d}:{start % 2 * 30:02d}",
+                "end": f"{end // 2:02d}:{end % 2 * 30:02d}",
+                "mode": mode,
+            }
+        )
+        start = end
+    return periods
 
 
 class EdilkaminDailyScheduleSensor(CoordinatorEntity, SensorEntity):
@@ -68,10 +90,12 @@ class EdilkaminDailyScheduleSensor(CoordinatorEntity, SensorEntity):
         chrono, is_auto, values = schedule
         now = dt_util.now()
         start = now.weekday() * 48
+        slots = values[start : start + 48]
         return {
             "date": now.date().isoformat(),
             "timezone": str(dt_util.DEFAULT_TIME_ZONE),
-            "slots": values[start : start + 48],
+            "slots": slots,
+            "periods": schedule_periods(slots, is_auto=is_auto),
             "chrono_active": bool(chrono["is_active"]),
             "is_auto": is_auto,
             "economy_temperature": chrono.get("economy_temperature"),
