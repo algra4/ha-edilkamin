@@ -9,7 +9,10 @@ from zoneinfo import ZoneInfo
 from homeassistant.components.sensor import SensorDeviceClass
 import pytest
 
-from custom_components.edilkamin.schedule import EdilkaminDailyScheduleSensor
+from custom_components.edilkamin.schedule import (
+    EdilkaminDailyScheduleSensor,
+    schedule_periods,
+)
 from custom_components.edilkamin.sensor import async_setup_entry
 
 
@@ -177,3 +180,104 @@ def test_setup_registers_sensor(coordinator):
         )
         == 1
     )
+
+
+def test_periods_request_example():
+    assert schedule_periods([0, 0, 1, 1, 2, 2], is_auto=True) == [
+        {"start": "00:00", "end": "01:00", "mode": "off"},
+        {"start": "01:00", "end": "02:00", "mode": "economy"},
+        {"start": "02:00", "end": "03:00", "mode": "comfort"},
+    ]
+
+
+@pytest.mark.parametrize(
+    ("is_auto", "value", "mode"),
+    [
+        (True, 0, "off"),
+        (True, 1, "economy"),
+        (True, 2, "comfort"),
+        (False, 0, "off"),
+        (False, 1, "power_1"),
+        (False, 2, "power_2"),
+        (False, 3, "power_3"),
+        (False, 4, "power_4"),
+        (False, 5, "power_5"),
+    ],
+)
+def test_periods_full_day_and_modes(coordinator, is_auto, value, mode):
+    coordinator.data["nvm"]["user_parameters"]["is_auto"] = is_auto
+    key = "temperature_ranges" if is_auto else "power_ranges"
+    coordinator.data["nvm"]["chrono"][key] = [value] * 336
+    sensor = EdilkaminDailyScheduleSensor(coordinator)
+    assert sensor.extra_state_attributes["periods"] == [
+        {"start": "00:00", "end": "24:00", "mode": mode},
+    ]
+    assert sensor.extra_state_attributes["slots"] == [value] * 48
+
+
+def test_periods_half_hour_boundaries_and_separated_runs():
+    assert schedule_periods([0] + [2] * 46 + [0], is_auto=True) == [
+        {"start": "00:00", "end": "00:30", "mode": "off"},
+        {"start": "00:30", "end": "23:30", "mode": "comfort"},
+        {"start": "23:30", "end": "24:00", "mode": "off"},
+    ]
+
+
+def test_periods_alternating_slots_cover_each_half_hour():
+    periods = schedule_periods([0, 1] * 24, is_auto=True)
+    assert len(periods) == 48
+    assert periods[0] == {"start": "00:00", "end": "00:30", "mode": "off"}
+    assert periods[-1] == {"start": "23:30", "end": "24:00", "mode": "economy"}
+    for index, period in enumerate(periods):
+        assert period["start"] == f"{index // 2:02d}:{index % 2 * 30:02d}"
+        assert period["end"] == f"{(index + 1) // 2:02d}:{(index + 1) % 2 * 30:02d}"
+        if index:
+            assert periods[index - 1]["end"] == period["start"]
+
+
+def test_manual_periods_keep_different_power_levels_separate():
+    assert schedule_periods([0, 1, 1, 5, 5, 2], is_auto=False) == [
+        {"start": "00:00", "end": "00:30", "mode": "off"},
+        {"start": "00:30", "end": "01:30", "mode": "power_1"},
+        {"start": "01:30", "end": "02:30", "mode": "power_5"},
+        {"start": "02:30", "end": "03:00", "mode": "power_2"},
+    ]
+
+
+def test_periods_use_selected_day_and_ignore_chrono_enablement(coordinator):
+    saved = [0, 0, 1, 1, 2, 2] + [0] * 42
+    coordinator.data["nvm"]["chrono"]["temperature_ranges"][48:96] = saved
+    original = deepcopy(coordinator.data)
+    sensor = EdilkaminDailyScheduleSensor(coordinator)
+    now = datetime(2026, 10, 20, 12, tzinfo=ZoneInfo("Europe/Berlin"))
+    with patch("custom_components.edilkamin.schedule.dt_util.now", return_value=now):
+        enabled = sensor.extra_state_attributes
+        assert coordinator.data == original
+        coordinator.data["nvm"]["chrono"]["is_active"] = False
+        disabled = sensor.extra_state_attributes
+    assert enabled["slots"] == disabled["slots"] == saved
+    assert (
+        enabled["periods"]
+        == disabled["periods"]
+        == [
+            {"start": "00:00", "end": "01:00", "mode": "off"},
+            {"start": "01:00", "end": "02:00", "mode": "economy"},
+            {"start": "02:00", "end": "03:00", "mode": "comfort"},
+            {"start": "03:00", "end": "24:00", "mode": "off"},
+        ]
+    )
+    assert disabled["chrono_active"] is False
+    enabled["periods"][0]["end"] = "12:00"
+    assert disabled["periods"][0]["end"] == "01:00"
+
+
+@pytest.mark.parametrize(("month", "day"), [(3, 29), (10, 25)])
+def test_periods_use_wall_clock_times_on_dst_days(coordinator, month, day):
+    coordinator.data["nvm"]["chrono"]["temperature_ranges"] = ([1] * 6 + [0] * 42) * 7
+    sensor = EdilkaminDailyScheduleSensor(coordinator)
+    now = datetime(2026, month, day, 12, tzinfo=ZoneInfo("Europe/Berlin"))
+    with patch("custom_components.edilkamin.schedule.dt_util.now", return_value=now):
+        assert sensor.extra_state_attributes["periods"] == [
+            {"start": "00:00", "end": "03:00", "mode": "economy"},
+            {"start": "03:00", "end": "24:00", "mode": "off"},
+        ]
