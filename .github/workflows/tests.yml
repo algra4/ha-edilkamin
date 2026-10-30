@@ -13,8 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.13.2"]
-        homeassistant-version: ["2025.5.0", "2025.9.0"]
+        include:
+          - python-version: "3.14"
+            homeassistant-version: "2026.3.0"
+          - python-version: "3.14"
+            homeassistant-version: "2026.10.4"
 
     steps:
     - uses: actions/checkout@v7
@@ -29,21 +32,22 @@ jobs:
       with:
         enable-cache: true
 
-    - name: Install dependencies with uv (using pyproject)
+    - name: Install test dependencies and Home Assistant
       run: |
-        uv sync --all-extras --dev
+        uv venv --python "${{ matrix.python-version }}"
+        uv pip install -e . --group test "homeassistant==${{ matrix.homeassistant-version }}"
 
-    - name: Install Home Assistant ${{ matrix.homeassistant-version }}
+    - name: Run tests with pytest
       run: |
-        uv pip install "homeassistant==${{ matrix.homeassistant-version }}"
-
-    - name: Run tests with pytest (via uv)
-      run: |
-        uv run pytest tests/ -v --cov=custom_components --cov-report=xml --cov-report=term
+        .venv/bin/pytest tests/ -v --cov=custom_components --cov-report=xml --cov-report=term
 
     - name: Upload coverage to Codecov
-      if: matrix.python-version == '3.13'
+      if: >-
+        matrix.homeassistant-version == '2026.10.4' &&
+        (github.event_name != 'pull_request' ||
+         github.event.pull_request.head.repo.fork == false)
       uses: codecov/codecov-action@v7
       with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
+        files: ./coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
