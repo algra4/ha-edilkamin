@@ -77,6 +77,19 @@ The Integration creates the number of fans depending on the pellet stove
 | `Autonomy`  |  Time remaining before the pellet stove turns off if no pellets are added | minute |
 | `Power ons`  |  Number of times the pellet stove has been turn on | int |
 | `Daily schedule` | Today's programmed chrono slots; state is `enabled` or `disabled` | enum |
+| `P1 working hours` ... `P5 working hours` | Lifetime working time at each power level | h |
+| `Total working hours` | Sum of all five lifetime working-time counters | h |
+
+Working hours come from `nvm.total_counters.p1_working_time` through
+`p5_working_time`, without conversion. The hour unit was checked against the
+physical remote control of a Pellkamin 10 evo plus; other models have not been
+independently verified. These duration sensors use `total_increasing` because
+they accumulate operating time; Home Assistant treats a decrease as a new meter
+cycle. Missing or invalid counters make the affected sensor unavailable, never
+zero. The total requires all five counters, including explicitly reported zeros.
+The total covers P1-P5 working time, not necessarily every operating phase.
+Resettable `nvm.service_counters` are deliberately not used or exposed: they must
+not be mixed with lifetime hours, and their reset semantics need separate validation.
 
 #### Daily schedule
 
@@ -93,6 +106,7 @@ Attributes:
 | `date` | Day represented, as `YYYY-MM-DD` in Home Assistant's configured time zone |
 | `timezone` | Home Assistant's configured time zone |
 | `slots` | 48 half-hour values: index 0 is 00:00–00:30, index 1 is 00:30–01:00, …, index 47 is 23:30–24:00 |
+| `periods` | Consecutive equal slots grouped as `{start, end, mode}`; local `HH:MM` times from `00:00` to `24:00` |
 | `chrono_active` | Whether the stove's chrono program is enabled |
 | `is_auto` | `true` selects `temperature_ranges`; `false` selects `power_ranges` |
 | `economy_temperature` | Programmed Economy setpoint, if reported by the stove |
@@ -107,7 +121,39 @@ Slots represent wall-clock half-hours, so daylight-saving transition days still 
 48 entries; they are not a list of 48 unique UTC intervals. A programmed slot describes
 the requested schedule, not whether the stove is currently burning or in standby.
 
-Example template (replace the entity ID with the one created for your device):
+`periods` makes the saved on/off times directly readable without converting slot
+indexes in dashboard templates. Each period includes its `start` and excludes its
+`end`. Boundaries are always whole or half hours, formatted with leading zeros.
+The periods cover the full day without gaps or overlaps, including off periods;
+the final period ends at `24:00`, not `00:00`. Equal values are merged only when
+adjacent, never across midnight or across another mode. Times are wall-clock
+labels in `timezone`, not UTC timestamps, including on DST transition days.
+
+Modes are `off`, `economy`, `comfort` in automatic mode and `off`, `power_1`
+through `power_5` in manual mode. `chrono_active` remains independent: when chrono
+is disabled, both `slots` and `periods` still describe the saved schedule.
+
+For example, a day starting with `[0, 0, 1, 1, 2, 2]` and off for the remaining
+42 slots exposes:
+
+```json
+[
+  {"start": "00:00", "end": "01:00", "mode": "off"},
+  {"start": "01:00", "end": "02:00", "mode": "economy"},
+  {"start": "02:00", "end": "03:00", "mode": "comfort"},
+  {"start": "03:00", "end": "24:00", "mode": "off"}
+]
+```
+
+Example template listing the saved time ranges (replace the entity ID with yours):
+
+```jinja2
+{% for period in state_attr('sensor.edilkamin_stove_daily_schedule', 'periods') or [] %}
+  {{ period.start }}–{{ period.end }}: {{ period.mode }}
+{% endfor %}
+```
+
+The raw `slots` attribute remains available. Example current-slot template:
 
 ```jinja2
 {% set slots = state_attr('sensor.edilkamin_stove_daily_schedule', 'slots') %}
