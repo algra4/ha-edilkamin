@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 from datetime import UTC, datetime, timedelta
 import logging
+from typing import TYPE_CHECKING
 
 import async_timeout
 import edilkamin
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import jwt
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -18,11 +24,14 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
         username: str,
         password: str,
         mac_address: str,
+        *,
+        config_entry: ConfigEntry | None = None,
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=config_entry,
             name="Edilkamin coordinator",
             update_interval=timedelta(seconds=15),
         )

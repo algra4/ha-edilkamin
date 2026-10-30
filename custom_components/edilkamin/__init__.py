@@ -36,7 +36,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     username = entry.data[USERNAME]
     password = entry.data[PASSWORD]
 
-    coordinator = EdilkaminCoordinator(hass, username, password, mac_address)
+    coordinator = EdilkaminCoordinator(
+        hass, username, password, mac_address, config_entry=entry
+    )
 
     # First refresh
     await coordinator.async_refresh()

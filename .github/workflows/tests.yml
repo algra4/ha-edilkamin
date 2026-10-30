@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ["3.13.2"]
@@ -39,7 +39,9 @@ jobs:
 
     - name: Run tests with pytest (via uv)
       run: |
-        uv run pytest tests/ -v --cov=custom_components --cov-report=xml --cov-report=term
+        # Keep the matrix version installed above instead of syncing the dev pin.
+        uv run --no-sync python -c "import sys; from importlib.metadata import version; print('Python:', sys.version); print('Home Assistant:', version('homeassistant')); assert version('homeassistant') == '${{ matrix.homeassistant-version }}'"
+        uv run --no-sync pytest tests/ -v --cov=custom_components --cov-report=xml --cov-report=term
 
     - name: Upload coverage to Codecov
       if: matrix.python-version == '3.13'
