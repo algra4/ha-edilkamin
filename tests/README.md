@@ -9,6 +9,8 @@ This guide explains how to set up the testing environment and run tests for the 
 
 ## Prerequisites
 
+Python 3.14.2 or later is required.
+
 ### Installing uv
 
 [uv](https://github.com/astral-sh/uv) is a fast Python package manager and resolver. Install it using one of the following methods:
@@ -28,11 +30,10 @@ Install all dependencies declared in pyproject.toml, the dev dependency-group is
 uv sync
 ```
 
-CI tests Home Assistant 2025.5.0 and 2025.9.0 on Python 3.13, plus
-2026.10.4 on Python 3.14. It installs the `test` dependency group together
-with the selected HA version instead of syncing the default `dev` group,
-which pins HA 2025.5.0. For 2025.9.0, CI also constrains `pycares<5`:
-its `aiodns` version imports APIs removed by pycares 5.
+CI tests the minimum supported Home Assistant version, 2026.3.0, and the
+latest stable version, 2026.10.4, on Python 3.14. It installs the `test`
+dependency group together with the selected HA version instead of syncing the
+default `dev` group, which pins HA 2026.3.0.
 
 ## Running Tests
 

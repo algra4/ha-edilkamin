@@ -14,10 +14,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - python-version: "3.13"
-            homeassistant-version: "2025.5.0"
-          - python-version: "3.13"
-            homeassistant-version: "2025.9.0"
+          - python-version: "3.14"
+            homeassistant-version: "2026.3.0"
           - python-version: "3.14"
             homeassistant-version: "2026.10.4"
 
@@ -38,11 +36,6 @@ jobs:
       run: |
         uv venv --python "${{ matrix.python-version }}"
         uv pip install -e . --group test "homeassistant==${{ matrix.homeassistant-version }}"
-
-    # HA 2025.9's aiodns release uses pycares APIs removed in version 5.
-    - name: Constrain pycares for Home Assistant 2025.9
-      if: matrix.homeassistant-version == '2025.9.0'
-      run: uv pip install 'pycares<5'
 
     - name: Run tests with pytest
       run: |
