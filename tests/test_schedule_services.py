@@ -67,6 +67,16 @@ async def test_device_selection_routes_to_exact_entry_and_unloads(tmp_path):
         assert result["changed_slots"] == [95]
         apis[0].get_info.assert_not_called()
         apis[1].get_info.assert_awaited_once()
+        once = await hass.services.async_call(
+            DOMAIN,
+            "set_schedule",
+            {**request, "auto_restore": True},
+            blocking=True,
+            return_response=True,
+        )
+        assert once["recurrence"] == "once"
+        assert once["restore_at"]
+        assert not hass.data[DOMAIN]["schedule_writers"]["second"].windows
         for api in apis:
             api.execute_command.assert_not_called()
         for malformed in [[], ["first", "second"]]:

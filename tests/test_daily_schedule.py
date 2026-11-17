@@ -47,6 +47,21 @@ def test_metadata(coordinator):
     assert sensor.device_info["identifiers"] == {("edilkamin", "00:11:22:33:44:55")}
 
 
+def test_recovery_status_is_exposed_without_sharing_mutable_data(coordinator):
+    coordinator.schedule_edit_status = {
+        "temporary_windows": [{"id": "window", "phase": "restore_pending"}],
+        "last_schedule_edit": {"status": "restore_pending"},
+    }
+    sensor = EdilkaminDailyScheduleSensor(coordinator)
+    attributes = sensor.extra_state_attributes
+    assert attributes["last_schedule_edit"]["status"] == "restore_pending"
+    attributes["temporary_windows"][0]["phase"] = "changed"
+    assert (
+        coordinator.schedule_edit_status["temporary_windows"][0]["phase"]
+        == "restore_pending"
+    )
+
+
 @pytest.mark.parametrize("day", range(7))
 @pytest.mark.parametrize("is_auto", [True, False])
 def test_weekday_and_mode(coordinator, day, is_auto):

@@ -182,8 +182,9 @@ Requires Home Assistant 2026.3.0 or later.
 
 The `edilkamin.set_schedule` action permanently replaces a time range on one or
 more weekdays. Select exactly one Edilkamin device with a loaded integration
-entry. Editing currently requires automatic mode and matching
-`temperature_ranges` / `power_ranges` representations in the cloud response.
+entry. Editing currently requires automatic mode. Differing cloud
+`temperature_ranges` / `power_ranges` representations are accepted only when
+explained by this action's durable pending recovery records.
 These fields are not assumed to be independent programs: a write may update
 both representations of the same schedule. Manual power scheduling is not
 supported by this action yet.
@@ -226,6 +227,65 @@ If a command times out or readback differs, the action raises an error and keeps
 the backup. It does not blindly retry or restore a whole week over possible
 subsequent edits: inspect the saved plan in The Mind before trying again. This
 action uses the existing cloud account and adds no periodic polling.
+
+#### One-off windows with automatic restoration
+
+Add `auto_restore: true` to change exactly one occurrence on one weekday.
+The action resolves the next occurrence that has not ended yet; optional
+`date: YYYY-MM-DD` selects it explicitly and must match that weekday.
+For example, a dashboard can calculate `days` and `date` dynamically:
+
+```yaml
+action: edilkamin.set_schedule
+target:
+  device_id: YOUR_EDILKAMIN_DEVICE_ID
+data:
+  days: ["{{ ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'][now().weekday()] }}"]
+  date: "{{ now().date().isoformat() }}"
+  start: "23:30"
+  end: "24:00"
+  mode: comfort
+  auto_restore: true
+```
+
+The selected date must be within seven days and its end must still be in the
+future. A date seven days ahead is refused if the same weekly blocks would
+still apply today. Times use Home Assistant's configured time zone. The
+nonexistent boundaries at the spring DST transition are rejected; an ambiguous
+autumn end uses the second occurrence. The stove's 48-slot format cannot
+address the two occurrences separately. A future window is saved to the stove
+immediately; restoration at its end makes it one-off. Without `auto_restore`,
+the action keeps its permanent weekly behavior.
+
+Only actually changed slots are owned by a temporary window. Previews and
+no-ops do not create recovery records. Overlapping writes to owned slots are
+refused, including permanent edits; independent windows are supported.
+Before the initial command, original values, applied values, window ID and
+UTC deadline are saved in Home Assistant's `.storage`, separately per config
+entry. Recovery resumes on integration load, including overdue windows after
+a restart. Keep this storage and the backups until all windows are complete.
+
+At the deadline a fresh cloud read is checked. Original values replace only
+slots still equal to this window's applied value. Other slots, updated targets
+and distinguishable later edits remain untouched. Already restored slots need
+no command. Restoration has its own backup, concurrency check and readback.
+The cloud has no revision token: an external edit to the exact same value is
+indistinguishable, and simultaneous edits between the final read and write
+cannot be ruled out. Avoid concurrent schedule editors.
+
+Home Assistant and cloud access are required at the deadline; this is not a
+device-side expiration guarantee. Offline service, manual mode, unexplained
+data divergence or storage errors leave recovery pending and retry after 30
+seconds, always reading before deciding to write. A timed-out command is never
+blindly replayed. Unloading cancels the local timer/task but retains recovery
+data. With no pending windows there is no additional polling.
+
+The `Daily schedule` sensor adds `temporary_windows` (ID, date, start, end,
+mode, UTC `restore_at`, phase and last error type) and `last_schedule_edit`.
+The action response also includes resolved date/deadline and window ID.
+These describe recovery status; `chrono_active`, `slots` and `periods` retain
+their existing meanings. A pending recovery should be checked in The Mind
+if Home Assistant cannot reconnect.
 
 Click on this button:
 

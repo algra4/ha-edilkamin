@@ -1,11 +1,11 @@
 set_schedule:
   name: Set weekly schedule range
   description: >-
-    Permanently replace a half-hour range on selected weekdays with off,
+    Replace a half-hour range on selected weekdays with off,
     economy or comfort. Select exactly one device in automatic mode.
     Chrono enablement and temperatures are unchanged. The cloud may mirror
     one shared program as temperature_ranges and power_ranges; both are checked.
-    Only matching representations are currently supported. A backup is saved
+    Unexplained differing representations are rejected. A backup is saved
     before writing, followed by a full readback. This action uses the cloud.
   target:
     device:
@@ -55,3 +55,20 @@ set_schedule:
       default: false
       selector:
         boolean:
+    auto_restore:
+      name: Automatically restore
+      description: >-
+        One occurrence on exactly one weekday, then restore original changed slots.
+        Requires Home Assistant and cloud connectivity; failures remain pending.
+        Without this option changes repeat weekly until edited again.
+      default: false
+      selector:
+        boolean:
+    date:
+      name: Date of occurrence
+      description: >-
+        Optional YYYY-MM-DD matching the weekday, within the next seven days.
+        Only with auto_restore. Otherwise the next not-yet-ended occurrence is used.
+      example: "2026-12-01"
+      selector:
+        text:

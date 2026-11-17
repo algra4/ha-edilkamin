@@ -21,7 +21,9 @@ TARGET_SCHEMA = vol.Schema(
 
 async def async_setup_services(hass, entry, api, coordinator):
     writers = hass.data[DOMAIN].setdefault(WRITERS, {})
-    writers[entry.entry_id] = ScheduleWriter(hass, api, coordinator)
+    writer = ScheduleWriter(hass, api, coordinator, entry.entry_id)
+    await writer.async_start()
+    writers[entry.entry_id] = writer
     if hass.services.has_service(DOMAIN, ACTION):
         return
 
@@ -56,6 +58,8 @@ async def async_setup_services(hass, entry, api, coordinator):
 
 async def async_unload_services(hass, entry):
     writers = hass.data[DOMAIN].get(WRITERS, {})
-    writers.pop(entry.entry_id, None)
+    writer = writers.pop(entry.entry_id, None)
+    if writer is not None:
+        await writer.async_stop()
     if not writers:
         hass.services.async_remove(DOMAIN, ACTION)

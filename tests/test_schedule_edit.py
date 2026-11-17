@@ -50,7 +50,14 @@ class TestSchedule(unittest.IsolatedAsyncioTestCase):
         self.coordinator = Mock(async_request_refresh=AsyncMock())
         self.coordinator.get_mac_address.return_value = "00:11:22:33:44:55"
         self.override = False
-        self.writer = ScheduleWriter(self.hass, self.api, self.coordinator)
+        store = Mock(async_load=AsyncMock(return_value=None), async_save=AsyncMock())
+        with patch(
+            "custom_components.edilkamin.schedule_edit.Store", return_value=store
+        ):
+            self.writer = ScheduleWriter(
+                self.hass, self.api, self.coordinator, "test-entry"
+            )
+        self.writer._arm = Mock()
         self.request = {
             "days": ["tuesday"],
             "start": "23:30",
