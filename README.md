@@ -37,8 +37,18 @@
 
 | Name    | Description |
 | -------- | ------- |
-| `Check configuration`  | Check if the pellet stove is available via api   |
+| `Check configuration` | Passive diagnostic: problem when the latest coordinator update failed |
 | `Tank`  | Give the information if the pellet stove must be refill or not   |
+
+**Check configuration** observes existing coordinator updates: **off / OK** after
+success, **on / Problem** after failure, and recovery on the next successful
+update. It stays available during failures. Its legacy name and
+`<mac>_check_binary_sensor` unique ID are preserved; no entity migration is needed.
+It sends no commands or extra API reads, even for manual entity updates, and
+never retries a timed-out check command. The SDK check method and physical
+controls are unchanged. Success does not prove fresh stove telemetry, a working
+command channel, correct appliance configuration, or safe operation; cached cloud
+data can still produce OK.
 
 ### Climate
 
