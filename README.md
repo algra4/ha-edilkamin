@@ -178,6 +178,115 @@ The raw `slots` attribute remains available. Example current-slot template:
 
 Requires Home Assistant 2026.3.0 or later.
 
+### Editing a weekly chrono schedule
+
+The `edilkamin.set_schedule` action permanently replaces a time range on one or
+more weekdays. Select exactly one Edilkamin device with a loaded integration
+entry. Editing currently requires automatic mode. Differing cloud
+`temperature_ranges` / `power_ranges` representations are accepted only when
+explained by this action's durable pending recovery records.
+These fields are not assumed to be independent programs: a write may update
+both representations of the same schedule. Manual power scheduling is not
+supported by this action yet.
+
+```yaml
+action: edilkamin.set_schedule
+target:
+  device_id: YOUR_EDILKAMIN_DEVICE_ID
+data:
+  days: [monday, tuesday, wednesday, thursday, friday]
+  start: "06:00"
+  end: "08:30"
+  mode: comfort
+  preview_only: true
+```
+
+Use `off`, `economy`, or `comfort`. Times are local half-hour labels; the end
+is exclusive, and `24:00` is accepted only as an end. Split overnight ranges
+into two actions. To rebuild a complete day, first set `00:00`–`24:00` to `off`,
+then add its economy/comfort ranges. Other days and unselected slots are kept.
+The saved weekly plan is edited even if chrono is disabled; the action does
+not enable chrono, change temperatures, switch operating modes, or send a power
+command. Changes recur weekly and remain in effect until edited again.
+
+With `preview_only: true`, the response lists the zero-based weekly indices
+that would change and no command is sent. Omit it or set it to `false` to save.
+An already matching range is a no-op. The action can optionally return a response
+(`preview`, `unchanged`, or `verified`).
+
+Before a write, the action fetches a fresh full week and saves `before.json`,
+`request.json`, and `proposed-command.json` under
+`<config>/edilkamin-backups/schedule-<UTC>-<ID>/`. Another cloud read checks for
+concurrent edits before sending the full 336-slot array. The cloud offers no
+atomic compare-and-set operation, so avoid simultaneous schedule editors.
+Requests are serialized per stove. A full readback verifies the expected data,
+including the other representation and unchanged chrono settings; the outcome
+is recorded in `result.json`. Backups contain schedule data, not account tokens.
+
+If a command times out or readback differs, the action raises an error and keeps
+the backup. It does not blindly retry or restore a whole week over possible
+subsequent edits: inspect the saved plan in The Mind before trying again. This
+action uses the existing cloud account and adds no periodic polling.
+
+#### One-off windows with automatic restoration
+
+Add `auto_restore: true` to change exactly one occurrence on one weekday.
+The action resolves the next occurrence that has not ended yet; optional
+`date: YYYY-MM-DD` selects it explicitly and must match that weekday.
+For example, a dashboard can calculate `days` and `date` dynamically:
+
+```yaml
+action: edilkamin.set_schedule
+target:
+  device_id: YOUR_EDILKAMIN_DEVICE_ID
+data:
+  days: ["{{ ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'][now().weekday()] }}"]
+  date: "{{ now().date().isoformat() }}"
+  start: "23:30"
+  end: "24:00"
+  mode: comfort
+  auto_restore: true
+```
+
+The selected date must be within seven days and its end must still be in the
+future. A date seven days ahead is refused if the same weekly blocks would
+still apply today. Times use Home Assistant's configured time zone. The
+nonexistent boundaries at the spring DST transition are rejected; an ambiguous
+autumn end uses the second occurrence. The stove's 48-slot format cannot
+address the two occurrences separately. A future window is saved to the stove
+immediately; restoration at its end makes it one-off. Without `auto_restore`,
+the action keeps its permanent weekly behavior.
+
+Only actually changed slots are owned by a temporary window. Previews and
+no-ops do not create recovery records. Overlapping writes to owned slots are
+refused, including permanent edits; independent windows are supported.
+Before the initial command, original values, applied values, window ID and
+UTC deadline are saved in Home Assistant's `.storage`, separately per config
+entry. Recovery resumes on integration load, including overdue windows after
+a restart. Keep this storage and the backups until all windows are complete.
+
+At the deadline a fresh cloud read is checked. Original values replace only
+slots still equal to this window's applied value. Other slots, updated targets
+and distinguishable later edits remain untouched. Already restored slots need
+no command. Restoration has its own backup, concurrency check and readback.
+The cloud has no revision token: an external edit to the exact same value is
+indistinguishable, and simultaneous edits between the final read and write
+cannot be ruled out. Avoid concurrent schedule editors.
+
+Home Assistant and cloud access are required at the deadline; this is not a
+device-side expiration guarantee. Offline service, manual mode, unexplained
+data divergence or storage errors leave recovery pending and retry after 30
+seconds, always reading before deciding to write. A timed-out command is never
+blindly replayed. Unloading cancels the local timer/task but retains recovery
+data. With no pending windows there is no additional polling.
+
+The `Daily schedule` sensor adds `temporary_windows` (ID, date, start, end,
+mode, UTC `restore_at`, phase and last error type) and `last_schedule_edit`.
+The action response also includes resolved date/deadline and window ID.
+These describe recovery status; `chrono_active`, `slots` and `periods` retain
+their existing meanings. A pending recovery should be checked in The Mind
+if Home Assistant cannot reconnect.
+
 Click on this button:
 
 [![Open your Home Assistant instance and open the repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg?style=flat-square)](https://my.home-assistant.io/redirect/hacs_repository/?owner=algra4&repository=ha-edilkamin&category=integration)

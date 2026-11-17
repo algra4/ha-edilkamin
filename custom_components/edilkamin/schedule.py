@@ -1,5 +1,6 @@
 """Read-only daily chrono schedule from the existing cloud coordinator."""
 
+from copy import deepcopy
 from itertools import groupby
 from typing import ClassVar
 
@@ -91,7 +92,7 @@ class EdilkaminDailyScheduleSensor(CoordinatorEntity, SensorEntity):
         now = dt_util.now()
         start = now.weekday() * 48
         slots = values[start : start + 48]
-        return {
+        attributes = {
             "date": now.date().isoformat(),
             "timezone": str(dt_util.DEFAULT_TIME_ZONE),
             "slots": slots,
@@ -101,3 +102,7 @@ class EdilkaminDailyScheduleSensor(CoordinatorEntity, SensorEntity):
             "economy_temperature": chrono.get("economy_temperature"),
             "comfort_temperature": chrono.get("comfort_temperature"),
         }
+        status = getattr(self.coordinator, "schedule_edit_status", None)
+        if isinstance(status, dict):
+            attributes.update(deepcopy(status))
+        return attributes

@@ -35,6 +35,7 @@ def test_setup_passes_its_entry_to_coordinator(monkeypatch):
     monkeypatch.setattr(integration, "EdilkaminCoordinator", factory)
     monkeypatch.setattr(integration, "EdilkaminAsyncApi", Mock())
     monkeypatch.setattr(integration, "register_device", Mock())
+    monkeypatch.setattr(integration, "async_setup_services", AsyncMock())
 
     assert asyncio.run(integration.async_setup_entry(hass, entry))
     factory.assert_called_once_with(
