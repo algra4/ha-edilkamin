@@ -1,0 +1,57 @@
+set_schedule:
+  name: Set weekly schedule range
+  description: >-
+    Permanently replace a half-hour range on selected weekdays with off,
+    economy or comfort. Select exactly one device in automatic mode.
+    Chrono enablement and temperatures are unchanged. The cloud may mirror
+    one shared program as temperature_ranges and power_ranges; both are checked.
+    Only matching representations are currently supported. A backup is saved
+    before writing, followed by a full readback. This action uses the cloud.
+  target:
+    device:
+      integration: edilkamin
+  fields:
+    days:
+      name: Weekdays
+      required: true
+      example: [monday, tuesday]
+      selector:
+        select:
+          multiple: true
+          options:
+            - {value: monday, label: Monday}
+            - {value: tuesday, label: Tuesday}
+            - {value: wednesday, label: Wednesday}
+            - {value: thursday, label: Thursday}
+            - {value: friday, label: Friday}
+            - {value: saturday, label: Saturday}
+            - {value: sunday, label: Sunday}
+    start:
+      name: Start
+      description: "Local HH:00 or HH:30. Split overnight ranges at midnight."
+      required: true
+      example: "06:00"
+      selector:
+        text:
+    end:
+      name: End (exclusive)
+      description: "Local HH:00 or HH:30; 24:00 is allowed as the end of the day."
+      required: true
+      example: "08:30"
+      selector:
+        text:
+    mode:
+      name: Mode
+      required: true
+      selector:
+        select:
+          options:
+            - {value: "off", label: "Off"}
+            - {value: economy, label: Economy}
+            - {value: comfort, label: Comfort}
+    preview_only:
+      name: Preview only
+      description: Read the current plan and report changed indices without writing.
+      default: false
+      selector:
+        boolean:
