@@ -178,6 +178,55 @@ The raw `slots` attribute remains available. Example current-slot template:
 
 Requires Home Assistant 2026.3.0 or later.
 
+### Editing a weekly chrono schedule
+
+The `edilkamin.set_schedule` action permanently replaces a time range on one or
+more weekdays. Select exactly one Edilkamin device with a loaded integration
+entry. Editing currently requires automatic mode and matching
+`temperature_ranges` / `power_ranges` representations in the cloud response.
+These fields are not assumed to be independent programs: a write may update
+both representations of the same schedule. Manual power scheduling is not
+supported by this action yet.
+
+```yaml
+action: edilkamin.set_schedule
+target:
+  device_id: YOUR_EDILKAMIN_DEVICE_ID
+data:
+  days: [monday, tuesday, wednesday, thursday, friday]
+  start: "06:00"
+  end: "08:30"
+  mode: comfort
+  preview_only: true
+```
+
+Use `off`, `economy`, or `comfort`. Times are local half-hour labels; the end
+is exclusive, and `24:00` is accepted only as an end. Split overnight ranges
+into two actions. To rebuild a complete day, first set `00:00`–`24:00` to `off`,
+then add its economy/comfort ranges. Other days and unselected slots are kept.
+The saved weekly plan is edited even if chrono is disabled; the action does
+not enable chrono, change temperatures, switch operating modes, or send a power
+command. Changes recur weekly and remain in effect until edited again.
+
+With `preview_only: true`, the response lists the zero-based weekly indices
+that would change and no command is sent. Omit it or set it to `false` to save.
+An already matching range is a no-op. The action can optionally return a response
+(`preview`, `unchanged`, or `verified`).
+
+Before a write, the action fetches a fresh full week and saves `before.json`,
+`request.json`, and `proposed-command.json` under
+`<config>/edilkamin-backups/schedule-<UTC>-<ID>/`. Another cloud read checks for
+concurrent edits before sending the full 336-slot array. The cloud offers no
+atomic compare-and-set operation, so avoid simultaneous schedule editors.
+Requests are serialized per stove. A full readback verifies the expected data,
+including the other representation and unchanged chrono settings; the outcome
+is recorded in `result.json`. Backups contain schedule data, not account tokens.
+
+If a command times out or readback differs, the action raises an error and keeps
+the backup. It does not blindly retry or restore a whole week over possible
+subsequent edits: inspect the saved plan in The Mind before trying again. This
+action uses the existing cloud account and adds no periodic polling.
+
 Click on this button:
 
 [![Open your Home Assistant instance and open the repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg?style=flat-square)](https://my.home-assistant.io/redirect/hacs_repository/?owner=algra4&repository=ha-edilkamin&category=integration)
